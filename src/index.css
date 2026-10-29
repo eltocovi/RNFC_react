@@ -1,2 +1,21 @@
 /* Carga todo Tailwind CSS (v4). No se necesita nada más. */
 @import "tailwindcss";
+
+@theme {
+    --color-rnfc-red: #cc1426;
+    --color-rnfc-dark-red: #a80d1c;
+    --color-rnfc-wine: #520d18;
+    --color-rnfc-dark: #0f172a;
+    --color-rnfc-cardbg: #ffffff;
+}
+
+body {
+    background-color: #f1f5f9;
+    font-family: ui-sans-serif, system-ui, -apple-system, 
+                BlinkMacSystemFont, "Segoe UI", Roboto, 
+                "Helvetica Neue", Arial, sans-serif;
+}
+
+.badge-v { background-color: #10b981; }
+.badge-e { background-color: #64748b; }
+.badge-d { background-color: #ef4444; }
