@@ -1,7 +1,7 @@
 export function TournamentBanner() {
   return (
     <section
-      className="relative rounded-2xl overflow-hidden shadow-xl text-white p-6 sm:p-9 bg-gradient-to-r from-[#ba1325] via-[#851020] to-[#25101a]"
+      className="relative rounded-2xl overflow-hidden shadow-xl text-white p-6 sm:p-9 bg-linear-to-r from-[#ba1325] via-[#851020] to-[#25101a]"
       data-purpose="hero-banner"
     >
       <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">

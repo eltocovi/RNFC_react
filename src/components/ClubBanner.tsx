@@ -1,6 +1,6 @@
 export default function ClubBanner() {
   return (
-    <section className="relative rounded-2xl overflow-hidden shadow-xl text-white p-6 sm:p-9 bg-gradient-to-r from-[#ba1325] via-[#851020] to-[#25101a]"
+    <section className="relative rounded-2xl overflow-hidden shadow-xl text-white p-6 sm:p-9 bg-linear-to-r from-[#ba1325] via-[#851020] to-[#25101a]"
       data-purpose="hero-banner">
       <div className="flex flex-col md:flex-row items-center md:items-start gap-6 relative z-10">
         <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-white p-2 flex items-center justify-center shadow-xl shrink-0 border-4 border-slate-100">

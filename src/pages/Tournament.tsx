@@ -46,7 +46,7 @@ export default function Home() {
                     <th className="py-3 px-3 text-center w-12" scope="col">
                       POS
                     </th>
-                    <th className="py-3 px-3 min-w-[190px]" scope="col">
+                    <th className="py-3 px-3 min-w-47.5" scope="col">
                       CLUB
                     </th>
                     <th className="py-3 px-2 text-center" scope="col">
@@ -77,7 +77,7 @@ export default function Home() {
                       PTS
                     </th>
                     <th
-                      className="py-3 px-4 text-center min-w-[140px]"
+                      className="py-3 px-4 text-center min-w-35"
                       scope="col"
                     >
                       ÚLTIMOS 5
