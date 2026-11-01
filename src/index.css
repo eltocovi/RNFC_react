@@ -1,2 +1,15 @@
-/* Carga todo Tailwind CSS (v4). No se necesita nada más. */
 @import "tailwindcss";
+
+/* Colores del RNFC: crean clases como bg-rnfc-rojo o text-rnfc-azul */
+@theme {
+  --color-rnfc-rojo: #e00000;
+  --color-rnfc-rojo-oscuro: #c00000;
+  --color-rnfc-granate: #7a0000;
+  --color-rnfc-azul: #0b1a30;
+  --color-rnfc-indigo: #140083;
+  --color-rnfc-fondo: #f5f7fa;
+}
+
+body {
+  @apply bg-rnfc-fondo text-slate-800 antialiased;
+}
