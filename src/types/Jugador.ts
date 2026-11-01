@@ -21,6 +21,9 @@ export interface Jugador {
   goles: number;
 }
 
+// Datos del formulario para crear o editar (el id lo asigna la API; partidos y goles no se editan)
+export type JugadorNuevo = Omit<Jugador, 'id' | 'partidos' | 'goles'>;
+
 // Jugador con los datos de su club ya unidos
 export interface JugadorConClub extends Jugador {
   club?: Club;

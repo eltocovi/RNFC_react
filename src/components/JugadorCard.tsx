@@ -42,8 +42,8 @@ export default function JugadorCard({ jugador }: Props) {
         <dd className="text-right font-semibold">{calcularEdad(jugador.fechaNacimiento)} años</dd>
         <dt className="text-slate-500">Pie dominante</dt>
         <dd className="text-right font-semibold">{jugador.pieDominante}</dd>
-        <dt className="text-slate-500">Partidos / Goles</dt>
-        <dd className="text-right font-semibold">{jugador.partidos} / {jugador.goles}</dd>
+        <dt className="text-slate-500">Partidos jugados</dt>
+        <dd className="text-right font-semibold">{jugador.partidos}</dd>
       </dl>
     </article>
   );
