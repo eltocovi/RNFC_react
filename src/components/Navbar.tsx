@@ -1,24 +1,34 @@
-export function Navbar() {
+import { Link, NavLink } from 'react-router';
+
+const ENLACES = [{ ruta: '/jugadores', texto: 'Jugadores' }];
+
+export default function Navbar() {
   return (
-    <nav className="hidden md:flex items-center space-x-6 text-[14px] font-medium">
-        <NavItem label="Inicio" href="#" />
-        <NavItem label="Quienes somos" href="#" />
-        <div className="relative group cursor-pointer flex items-center gap-1 font-semibold text-white">
-            <span>Competiciones</span>
-            <i className="fa-solid fa-chevron-down text-xs ml-0.5"></i>
-        </div>
-        <NavItem label="Jugadores" href="#" />
-        <NavItem label="Estadisticas" href="#" />
-        <NavItem label="Contacto" href="#" />
-    </nav>
+    <header className="sticky top-0 z-10 bg-linear-to-r from-rnfc-rojo via-rnfc-rojo-oscuro to-rnfc-granate shadow-md">
+      <nav className="mx-auto flex max-w-7xl items-center gap-6 px-4 py-3">
+        <Link to="/" className="flex items-center gap-2 text-white">
+          <img src="/logo-rnfc.png" alt="Logo RNFC" className="h-10 w-10 object-contain" />
+          <span className="text-xl font-extrabold tracking-wide">RNFC</span>
+        </Link>
+
+        {/* Menú: NavLink resalta la sección activa */}
+        <ul className="flex gap-1">
+          {ENLACES.map((enlace) => (
+            <li key={enlace.ruta}>
+              <NavLink
+                to={enlace.ruta}
+                className={({ isActive }) =>
+                  `rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
+                    isActive ? 'bg-white text-rnfc-rojo-oscuro' : 'text-white hover:bg-white/15'
+                  }`
+                }
+              >
+                {enlace.texto}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </header>
   );
-}
-
-type NavItemProps = {
-  label: string;
-  href: string;
-};
-
-const NavItem = ({ label, href } : NavItemProps) => {
-    return <a className="hover:text-red-200 transition-colors" href={href}>{label}</a>
 }
