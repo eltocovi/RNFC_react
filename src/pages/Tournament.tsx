@@ -1,30 +1,107 @@
-import { useState } from "react";
-import { Link } from "react-router";
-import { TournamentBanner } from "../components/TournamentBanner";
-import {
-  goleadoresMuestra,
-  partidosPorJornada,
-  posicionesMuestra,
-} from "../data/torneo";
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router';
+import { TournamentBanner } from '../components/TournamentBanner';
+import { obtenerClubes } from '../services/clubes';
+import { obtenerGoleadores, obtenerPartidos, obtenerPosiciones } from '../services/torneo';
+import { obtenerJugadores } from '../services/jugadores';
+import type { GoleadorConJugador, PartidoTorneo, PosicionTorneo } from '../types/Torneo';
+import type { JugadorConClub } from '../types/Jugador';
 
 const jornadas = [7, 8, 9];
 
-const rutasClubes: Record<string, number> = {
-  "Colo-Colo": 1,
-  "U. de Chile": 2,
-  "U. Católica": 3,
-  Cobreloa: 4,
-};
-
-function claseResultado(resultado: "V" | "E" | "D") {
-  if (resultado === "V") return "bg-emerald-500";
-  if (resultado === "E") return "bg-amber-400";
-  return "bg-red-500";
+function claseResultado(resultado: 'V' | 'E' | 'D') {
+  if (resultado === 'V') return 'bg-emerald-500';
+  if (resultado === 'E') return 'bg-amber-400';
+  return 'bg-red-500';
 }
 
 export default function Tournament() {
   const [jornada, setJornada] = useState(8);
-  const partidos = partidosPorJornada[jornada] ?? [];
+  const [posiciones, setPosiciones] = useState<PosicionTorneo[]>([]);
+  const [partidos, setPartidos] = useState<PartidoTorneo[]>([]);
+  const [goleadores, setGoleadores] = useState<GoleadorConJugador[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [intento, setIntento] = useState(0);
+
+  useEffect(() => {
+    let activo = true;
+
+    async function cargarDatos() {
+      setCargando(true);
+      try {
+        const [datosPosiciones, datosPartidos, datosGoleadores, datosJugadores, clubes] = await Promise.all([
+          obtenerPosiciones(),
+          obtenerPartidos(),
+          obtenerGoleadores(),
+          obtenerJugadores(),
+          obtenerClubes(),
+        ]);
+        if (!activo) return;
+
+        const clubesPorId = new Map(clubes.map((club) => [club.id, club] as const));
+        const jugadoresPorId = new Map<number, JugadorConClub>();
+        datosJugadores.forEach((jugador) => {
+          jugadoresPorId.set(jugador.id, {
+            ...jugador,
+            club: clubesPorId.get(jugador.clubId),
+          });
+        });
+
+        const goleadoresConJugador: GoleadorConJugador[] = [];
+        datosGoleadores.forEach((goleador) => {
+          const jugador = jugadoresPorId.get(goleador.jugadorId);
+          if (jugador) goleadoresConJugador.push({ ...goleador, jugador });
+        });
+
+        setPosiciones(datosPosiciones);
+        setPartidos(datosPartidos);
+        setGoleadores(goleadoresConJugador);
+        setError(null);
+      } catch (e) {
+        if (!activo) return;
+        setError(e instanceof Error ? e.message : 'Ocurrió un error inesperado.');
+      } finally {
+        if (activo) setCargando(false);
+      }
+    }
+
+    void cargarDatos();
+    return () => {
+      activo = false;
+    };
+  }, [intento]);
+
+  if (cargando) {
+    return <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10 text-center text-slate-500">Cargando información del torneo...</main>;
+  }
+
+  if (error) {
+    return (
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-10">
+        <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center">
+          <p className="font-semibold text-red-700">{error}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setError(null);
+              setCargando(true);
+              setIntento((actual) => actual + 1);
+            }}
+            className="mt-4 rounded-full bg-rnfc-rojo px-5 py-2 text-sm font-semibold text-white hover:bg-rnfc-rojo-oscuro"
+          >
+            Reintentar
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  const partidosJornada = partidos
+    .filter((partido) => partido.jornada === jornada)
+    .sort((a, b) => a.id - b.id);
+  const posicionesOrdenadas = [...posiciones].sort((a, b) => a.posicion - b.posicion);
+  const goleadoresOrdenados = [...goleadores].sort((a, b) => b.jugador.goles - a.jugador.goles);
 
   return (
     <main className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col space-y-7 px-4 py-7 sm:px-6 lg:px-8">
@@ -48,41 +125,40 @@ export default function Tournament() {
               <table className="w-full border-collapse text-left text-[13px]">
                 <thead className="border-b border-slate-100 bg-slate-50 text-[11px] font-bold uppercase text-slate-500">
                   <tr>
-                    {["POS", "CLUB", "PJ", "PG", "PE", "PP", "GF", "GC", "DIF", "PTS", "ÚLTIMOS 5"].map((titulo) => (
+                    {['POS', 'CLUB', 'PJ', 'PG', 'PE', 'PP', 'GF', 'GC', 'DIF', 'PTS', 'ÚLTIMOS 5'].map((titulo) => (
                       <th key={titulo} scope="col" className="whitespace-nowrap px-3 py-3 text-center first:w-12 first:px-2 first:text-center">{titulo}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {posicionesMuestra.map((fila) => {
+                  {posicionesOrdenadas.map((fila) => {
                     const diferencia = fila.gf - fila.gc;
-                    const rutaClub = rutasClubes[fila.club];
                     const zona = fila.posicion <= 2
-                      ? "border-emerald-500 text-emerald-600"
+                      ? 'border-emerald-500 text-emerald-600'
                       : fila.posicion <= 7
-                        ? "border-sky-400 text-sky-600"
+                        ? 'border-sky-400 text-sky-600'
                         : fila.posicion >= 15
-                          ? "border-red-500 text-red-600"
-                          : "border-transparent text-slate-500";
+                          ? 'border-red-500 text-red-600'
+                          : 'border-transparent text-slate-500';
 
                     return (
-                      <tr key={fila.posicion} className="transition-colors hover:bg-slate-50/70">
+                      <tr key={fila.id} className="transition-colors hover:bg-slate-50/70">
                         <td className={`border-l-4 px-3 py-2.5 text-center font-bold ${zona}`}>{fila.posicion}</td>
                         <td className="whitespace-nowrap px-3 py-2.5 font-semibold text-slate-800">
                           <span className="mr-2 inline-flex h-6 min-w-6 items-center justify-center rounded-full border bg-slate-50 px-1 text-[9px] font-bold text-slate-700">{fila.abreviatura}</span>
-                          {rutaClub ? <Link className="hover:text-red-600" to={`/clubs/${rutaClub}`}>{fila.club}</Link> : <span>{fila.club}</span>}
+                          {fila.clubId ? <Link className="hover:text-red-600" to={`/clubs/${fila.clubId}`}>{fila.club}</Link> : <span>{fila.club}</span>}
                         </td>
                         {[fila.pj, fila.pg, fila.pe, fila.pp, fila.gf, fila.gc].map((dato, indice) => (
                           <td key={indice} className="px-2 py-2.5 text-center">{dato}</td>
                         ))}
-                        <td className={`px-2 py-2.5 text-center font-semibold ${diferencia > 0 ? "text-emerald-600" : diferencia < 0 ? "text-red-500" : "text-slate-500"}`}>
+                        <td className={`px-2 py-2.5 text-center font-semibold ${diferencia > 0 ? 'text-emerald-600' : diferencia < 0 ? 'text-red-500' : 'text-slate-500'}`}>
                           {diferencia > 0 ? `+${diferencia}` : diferencia}
                         </td>
                         <td className="px-3 py-2.5 text-center text-sm font-black text-blue-600">{fila.puntos}</td>
                         <td className="px-4 py-2.5">
-                          <div className="flex justify-center gap-1" aria-label={`Últimos resultados: ${fila.ultimosResultados.join(", ")}`}>
+                          <div className="flex justify-center gap-1" aria-label={`Últimos resultados: ${fila.ultimosResultados.join(', ')}`}>
                             {fila.ultimosResultados.map((resultado, indice) => (
-                              <span key={`${fila.posicion}-${indice}`} className={`flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white ${claseResultado(resultado)}`}>{resultado}</span>
+                              <span key={`${fila.id}-${indice}`} className={`flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-bold text-white ${claseResultado(resultado)}`}>{resultado}</span>
                             ))}
                           </div>
                         </td>
@@ -119,7 +195,7 @@ export default function Tournament() {
                     type="button"
                     aria-pressed={jornada === numero}
                     onClick={() => setJornada(numero)}
-                    className={`px-2.5 py-1 transition-colors ${jornada === numero ? "bg-slate-800 text-white" : "text-slate-500 hover:bg-slate-100"}`}
+                    className={`px-2.5 py-1 transition-colors ${jornada === numero ? 'bg-slate-800 text-white' : 'text-slate-500 hover:bg-slate-100'}`}
                   >
                     F{numero}
                   </button>
@@ -127,12 +203,12 @@ export default function Tournament() {
               </div>
             </div>
             <p className="mb-3 text-xs text-slate-400">Jornada {jornada} · fixture de muestra</p>
-            {partidos.length === 0 ? (
+            {partidosJornada.length === 0 ? (
               <p className="rounded-xl bg-slate-50 p-5 text-center text-sm text-slate-500">No hay partidos de muestra registrados para esta jornada.</p>
             ) : (
               <div className="space-y-3">
-                {partidos.map((partido, indice) => (
-                  <article key={`${partido.local}-${partido.visita}-${indice}`} className="rounded-xl border border-slate-100 bg-slate-50/50 p-3">
+                {partidosJornada.map((partido) => (
+                  <article key={partido.id} className="rounded-xl border border-slate-100 bg-slate-50/50 p-3">
                     <div className="mb-2 flex items-center justify-between gap-2 text-[11px]">
                       <span className="text-slate-500">{partido.fecha}</span>
                       <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">{partido.estado}</span>
@@ -157,13 +233,13 @@ export default function Tournament() {
                   <tr><th className="px-3 py-2.5 text-center">#</th><th className="px-2 py-2.5">Jugador</th><th className="px-2 py-2.5">Club</th><th className="px-2 py-2.5 text-center">Penal</th><th className="px-3 py-2.5 text-center">Goles</th></tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {goleadoresMuestra.map((goleador, indice) => (
-                    <tr key={goleador.nombre} className="hover:bg-slate-50/50">
+                  {goleadoresOrdenados.map((goleador, indice) => (
+                    <tr key={goleador.id} className="hover:bg-slate-50/50">
                       <td className="px-3 py-2.5 text-center font-bold text-slate-400">{indice + 1}</td>
-                      <td className="px-2 py-2.5"><p className="font-bold text-slate-900">{goleador.nombre}</p><p className="text-[10px] text-slate-400">{goleador.nacionalidad}</p></td>
-                      <td className="whitespace-nowrap px-2 py-2.5 text-[11px] text-slate-600">{goleador.club}</td>
+                      <td className="px-2 py-2.5"><p className="font-bold text-slate-900">{goleador.jugador.nombre} {goleador.jugador.apellido}</p><p className="text-[10px] text-slate-400">{goleador.jugador.nacionalidad}</p></td>
+                      <td className="whitespace-nowrap px-2 py-2.5 text-[11px] text-slate-600">{goleador.jugador.club?.nombreCorto ?? 'Sin club'}</td>
                       <td className="px-2 py-2.5 text-center text-slate-400">{goleador.golesPenal}</td>
-                      <td className="px-3 py-2.5 text-center text-sm font-black text-red-600">{goleador.goles}</td>
+                      <td className="px-3 py-2.5 text-center text-sm font-black text-red-600">{goleador.jugador.goles}</td>
                     </tr>
                   ))}
                 </tbody>
