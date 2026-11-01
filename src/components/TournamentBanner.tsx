@@ -1,4 +1,8 @@
-export function TournamentBanner() {
+interface Props {
+  jornada: number;
+}
+
+export function TournamentBanner({ jornada }: Props) {
   return (
     <section
       className="relative rounded-2xl overflow-hidden shadow-xl text-white p-6 sm:p-9 bg-linear-to-r from-[#ba1325] via-[#851020] to-[#25101a]"
@@ -7,7 +11,7 @@ export function TournamentBanner() {
       <div className="flex flex-col lg:flex-row items-center lg:items-start gap-8">
         <div className="shrink-0 w-28 h-28 sm:w-32 sm:h-32 bg-white rounded-full p-2.5 shadow-2xl flex items-center justify-center text-center">
           <div className="flex flex-col items-center justify-center text-slate-800">
-            <i className="fa-solid fa-trophy text-amber-500 text-2xl mb-1"></i>
+            <span aria-hidden="true" className="mb-1 text-2xl">🏆</span>
             <span className="text-[9px] font-bold tracking-widest text-slate-400 uppercase leading-none">
               LIGA DE PRIMERA
             </span>
@@ -40,7 +44,7 @@ export function TournamentBanner() {
                 Jornada Actual
               </span>
               <span className="text-sm font-bold text-white tracking-wide">
-                Fecha 8 de 30
+                Fecha {jornada} de 30
               </span>
             </div>
             <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/15">

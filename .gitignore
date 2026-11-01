@@ -36,3 +36,4 @@ CLAUDE.md
 .claude/
 spec/
 AGENTS.md
+pnpm-lock.yaml

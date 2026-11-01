@@ -1,841 +1,198 @@
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 import ClubBanner from "../components/ClubBanner";
+import JugadorCard from "../components/JugadorCard";
+import { obtenerClubes } from "../services/clubes";
+import { obtenerJugadores } from "../services/jugadores";
+import type { Club as ClubType } from "../types/Club";
+import type { Jugador } from "../types/Jugador";
+import { normalizar } from "../utils/jugadores";
+
+type FiltroPosicion = "Todas" | "Arquero" | "Defensa" | "Mediocampista" | "Delantero";
+
+const FILTROS: FiltroPosicion[] = ["Todas", "Arquero", "Defensa", "Mediocampista", "Delantero"];
 
 export default function Club() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [clubes, setClubes] = useState<ClubType[]>([]);
+  const [jugadores, setJugadores] = useState<Jugador[]>([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroPosicion, setFiltroPosicion] = useState<FiltroPosicion>("Todas");
+  const [intento, setIntento] = useState(0);
+
+  useEffect(() => {
+    let activo = true;
+
+    async function cargar() {
+      setCargando(true);
+      try {
+        const [datosClubes, datosJugadores] = await Promise.all([
+          obtenerClubes(),
+          obtenerJugadores(),
+        ]);
+        if (!activo) return;
+        setClubes(datosClubes);
+        setJugadores(datosJugadores);
+        setError(null);
+      } catch (e) {
+        if (!activo) return;
+        setError(e instanceof Error ? e.message : "Ocurrió un error inesperado.");
+      } finally {
+        if (activo) setCargando(false);
+      }
+    }
+
+    void cargar();
+    return () => {
+      activo = false;
+    };
+  }, [intento]);
+
+  const club = clubes.find((item) => item.id === Number(id)) ?? (id ? undefined : clubes[0]);
+  const jugadoresClub = useMemo(
+    () => jugadores.filter((jugador) => jugador.clubId === club?.id),
+    [club?.id, jugadores],
+  );
+  const jugadoresFiltrados = useMemo(() => {
+    const texto = normalizar(busqueda.trim());
+    return jugadoresClub.filter((jugador) => {
+      const nombre = normalizar(`${jugador.nombre} ${jugador.apellido}`);
+      const coincideBusqueda = nombre.includes(texto) || String(jugador.dorsal).includes(texto);
+      const coincidePosicion = filtroPosicion === "Todas" || jugador.posicion === filtroPosicion;
+      return coincideBusqueda && coincidePosicion;
+    });
+  }, [busqueda, filtroPosicion, jugadoresClub]);
+
+  if (cargando) {
+    return <main className="mx-auto w-full max-w-7xl grow px-4 py-10 text-center text-slate-500">Cargando clubes...</main>;
+  }
+
+  if (error) {
+    return (
+      <main className="mx-auto w-full max-w-7xl grow px-4 py-10">
+        <div role="alert" className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center">
+          <p className="font-semibold text-red-700">{error}</p>
+          <button
+            type="button"
+            onClick={() => setIntento((actual) => actual + 1)}
+            className="mt-4 rounded-full bg-rnfc-rojo px-5 py-2 text-sm font-semibold text-white hover:bg-rnfc-rojo-oscuro"
+          >
+            Reintentar
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  if (!club) {
+    return (
+      <main className="mx-auto w-full max-w-7xl grow px-4 py-10">
+        <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
+          <h1 className="text-xl font-bold text-slate-900">Club no encontrado</h1>
+          <p className="mt-2 text-slate-500">Selecciona uno de los clubes disponibles en el registro.</p>
+          <button
+            type="button"
+            onClick={() => navigate("/clubs")}
+            className="mt-5 rounded-full bg-rnfc-rojo px-5 py-2 text-sm font-semibold text-white hover:bg-rnfc-rojo-oscuro"
+          >
+            Ver clubes
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  const jugadoresConClub = jugadoresFiltrados.map((jugador) => ({ ...jugador, club }));
+
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full grow">
-        <ClubBanner />
-        <br />
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        <section className="lg:col-span-8 flex flex-col space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <main className="mx-auto w-full max-w-7xl grow space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wide text-rnfc-rojo">Clubes</p>
+          <h2 className="text-2xl font-extrabold text-rnfc-azul">Perfil del club</h2>
+        </div>
+        <label className="flex flex-col gap-1 text-sm font-medium text-slate-600 sm:min-w-64">
+          Seleccionar club
+          <select
+            value={club.id}
+            onChange={(event) => navigate(`/clubs/${event.target.value}`)}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-800 shadow-sm focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200"
+          >
+            {clubes.map((opcion) => (
+              <option key={opcion.id} value={opcion.id}>{opcion.nombreCorto}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <ClubBanner club={club} cantidadJugadores={jugadoresClub.length} />
+
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+        <section className="space-y-5 lg:col-span-8" aria-labelledby="plantilla-heading">
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-              <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <i className="fa-solid fa-users text-red-600"></i>
-                Plantilla Oficial de Jugadores
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Mostrando 15 de 15 futbolistas registrados
+              <h2 id="plantilla-heading" className="text-lg font-bold text-slate-900">Plantilla de jugadores</h2>
+              <p className="mt-1 text-xs text-slate-500" aria-live="polite">
+                Mostrando {jugadoresFiltrados.length} de {jugadoresClub.length} jugadores registrados
               </p>
             </div>
-            <div className="w-full sm:w-64">
+            <label className="w-full text-xs sm:w-64">
+              <span className="sr-only">Buscar por nombre o dorsal</span>
               <input
-                className="w-full text-xs rounded-lg border-slate-300 bg-white shadow-sm focus:border-red-500 focus:ring-red-500 py-2 px-3 text-slate-700 placeholder-slate-400"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-700 shadow-sm placeholder:text-slate-400 focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-200"
                 placeholder="Buscar por nombre o dorsal..."
-                type="text"
+                type="search"
+                value={busqueda}
+                onChange={(event) => setBusqueda(event.target.value)}
               />
+            </label>
+          </div>
+
+          <div className="flex flex-wrap gap-2 text-xs font-medium" aria-label="Filtrar por posición">
+            {FILTROS.map((filtro) => (
+              <button
+                key={filtro}
+                type="button"
+                aria-pressed={filtroPosicion === filtro}
+                onClick={() => setFiltroPosicion(filtro)}
+                className={`rounded-lg px-3.5 py-1.5 transition-colors ${
+                  filtroPosicion === filtro
+                    ? "bg-slate-800 text-white shadow-sm"
+                    : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                {filtro === "Todas" ? "Todos" : filtro === "Arquero" ? "Arqueros" : filtro === "Mediocampista" ? "Mediocampistas" : filtro === "Delantero" ? "Delanteros" : "Defensas"}
+              </button>
+            ))}
+          </div>
+
+          {jugadoresClub.length === 0 ? (
+            <p className="rounded-xl bg-white p-8 text-center text-slate-500 shadow-sm">Este club aún no tiene jugadores registrados.</p>
+          ) : jugadoresFiltrados.length === 0 ? (
+            <p className="rounded-xl bg-white p-8 text-center text-slate-500 shadow-sm">No se encontraron jugadores con esos filtros.</p>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {jugadoresConClub.map((jugador) => <JugadorCard key={jugador.id} jugador={jugador} />)}
             </div>
-          </div>
-          <div className="flex flex-wrap gap-2 text-xs font-medium">
-            <button className="px-4 py-1.5 rounded-lg bg-slate-800 text-white shadow-sm">
-              Todos
-            </button>
-            <button className="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
-              Porteros
-            </button>
-            <button className="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
-              Defensas
-            </button>
-            <button className="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
-              Mediocampistas
-            </button>
-            <button className="px-3.5 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
-              Delanteros
-            </button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            <article className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
-                    #1
-                  </span>
-                  <span className="text-[10px] font-semibold bg-amber-500 text-white px-2 py-0.5 rounded-full">
-                    Portero
-                  </span>
-                </div>
-                <div className="flex justify-center mb-3">
-                  <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-800 font-extrabold text-xl shadow-inner border border-slate-200">
-                    1
-                  </div>
-                </div>
-                <div className="text-center mb-4">
-                  <h3 className="font-bold text-sm text-slate-900 leading-snug">
-                    Brayan Cortés
-                  </h3>
-                  <p className="text-xs text-slate-500">Chile · 29 años</p>
-                </div>
-              </div>
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Partidos
-                  </span>
-                  <span className="font-bold text-slate-800">18</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Goles
-                  </span>
-                  <span className="font-bold text-red-600">0</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">Rol</span>
-                  <span className="font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px]">
-                    Titular
-                  </span>
-                </div>
-              </div>
-            </article>
-            <article className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
-                    #12
-                  </span>
-                  <span className="text-[10px] font-semibold bg-amber-500 text-white px-2 py-0.5 rounded-full">
-                    Portero
-                  </span>
-                </div>
-                <div className="flex justify-center mb-3">
-                  <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-800 font-extrabold text-xl shadow-inner border border-slate-200">
-                    12
-                  </div>
-                </div>
-                <div className="text-center mb-4">
-                  <h3 className="font-bold text-sm text-slate-900 leading-snug">
-                    Fernando de Paul
-                  </h3>
-                  <p className="text-xs text-slate-500">Chile · 33 años</p>
-                </div>
-              </div>
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Partidos
-                  </span>
-                  <span className="font-bold text-slate-800">4</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Goles
-                  </span>
-                  <span className="font-bold text-red-600">0</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">Rol</span>
-                  <span className="font-semibold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded text-[10px]">
-                    Suplente
-                  </span>
-                </div>
-              </div>
-            </article>
-            <article className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
-                    #4
-                  </span>
-                  <span className="text-[10px] font-semibold bg-blue-600 text-white px-2 py-0.5 rounded-full">
-                    Defensa
-                  </span>
-                </div>
-                <div className="flex justify-center mb-3">
-                  <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-800 font-extrabold text-xl shadow-inner border border-slate-200">
-                    4
-                  </div>
-                </div>
-                <div className="text-center mb-4">
-                  <h3 className="font-bold text-sm text-slate-900 leading-snug">
-                    Alan Saldivia
-                  </h3>
-                  <p className="text-xs text-slate-500">Uruguay · 22 años</p>
-                </div>
-              </div>
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Partidos
-                  </span>
-                  <span className="font-bold text-slate-800">19</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Goles
-                  </span>
-                  <span className="font-bold text-red-600">1</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">Rol</span>
-                  <span className="font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px]">
-                    Titular
-                  </span>
-                </div>
-              </div>
-            </article>
-            <article className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
-                    #15
-                  </span>
-                  <span className="text-[10px] font-semibold bg-blue-600 text-white px-2 py-0.5 rounded-full">
-                    Defensa
-                  </span>
-                </div>
-                <div className="flex justify-center mb-3">
-                  <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-800 font-extrabold text-xl shadow-inner border border-slate-200">
-                    15
-                  </div>
-                </div>
-                <div className="text-center mb-4">
-                  <h3 className="font-bold text-sm text-slate-900 leading-snug">
-                    Emiliano Amor
-                  </h3>
-                  <p className="text-xs text-slate-500">Argentina · 29 años</p>
-                </div>
-              </div>
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Partidos
-                  </span>
-                  <span className="font-bold text-slate-800">16</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Goles
-                  </span>
-                  <span className="font-bold text-red-600">0</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">Rol</span>
-                  <span className="font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px]">
-                    Titular
-                  </span>
-                </div>
-              </div>
-            </article>
-            <article className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
-                    #16
-                  </span>
-                  <span className="text-[10px] font-semibold bg-blue-600 text-white px-2 py-0.5 rounded-full">
-                    Defensa
-                  </span>
-                </div>
-                <div className="flex justify-center mb-3">
-                  <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-800 font-extrabold text-xl shadow-inner border border-slate-200">
-                    16
-                  </div>
-                </div>
-                <div className="text-center mb-4">
-                  <h3 className="font-bold text-sm text-slate-900 leading-snug">
-                    Óscar Opazo
-                  </h3>
-                  <p className="text-xs text-slate-500">Chile · 33 años</p>
-                </div>
-              </div>
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Partidos
-                  </span>
-                  <span className="font-bold text-slate-800">17</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Goles
-                  </span>
-                  <span className="font-bold text-red-600">1</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">Rol</span>
-                  <span className="font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px]">
-                    Titular
-                  </span>
-                </div>
-              </div>
-            </article>
-            <article className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
-                    #21
-                  </span>
-                  <span className="text-[10px] font-semibold bg-blue-600 text-white px-2 py-0.5 rounded-full">
-                    Defensa
-                  </span>
-                </div>
-                <div className="flex justify-center mb-3">
-                  <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-800 font-extrabold text-xl shadow-inner border border-slate-200">
-                    21
-                  </div>
-                </div>
-                <div className="text-center mb-4">
-                  <h3 className="font-bold text-sm text-slate-900 leading-snug">
-                    Erick Wiemberg
-                  </h3>
-                  <p className="text-xs text-slate-500">Chile · 29 años</p>
-                </div>
-              </div>
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Partidos
-                  </span>
-                  <span className="font-bold text-slate-800">18</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Goles
-                  </span>
-                  <span className="font-bold text-red-600">2</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">Rol</span>
-                  <span className="font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px]">
-                    Titular
-                  </span>
-                </div>
-              </div>
-            </article>
-            <article className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
-                    #23
-                  </span>
-                  <span className="text-[10px] font-semibold bg-emerald-600 text-white px-2 py-0.5 rounded-full">
-                    Mediocampista
-                  </span>
-                </div>
-                <div className="flex justify-center mb-3">
-                  <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-800 font-extrabold text-xl shadow-inner border border-slate-200">
-                    23
-                  </div>
-                </div>
-                <div className="text-center mb-4">
-                  <h3 className="font-bold text-sm text-slate-900 leading-snug">
-                    Arturo Vidal
-                  </h3>
-                  <p className="text-xs text-slate-500">Chile · 37 años</p>
-                </div>
-              </div>
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Partidos
-                  </span>
-                  <span className="font-bold text-slate-800">16</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Goles
-                  </span>
-                  <span className="font-bold text-red-600">6</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">Rol</span>
-                  <span className="font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px]">
-                    Titular
-                  </span>
-                </div>
-              </div>
-            </article>
-            <article className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
-                    #8
-                  </span>
-                  <span className="text-[10px] font-semibold bg-emerald-600 text-white px-2 py-0.5 rounded-full">
-                    Mediocampista
-                  </span>
-                </div>
-                <div className="flex justify-center mb-3">
-                  <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-800 font-extrabold text-xl shadow-inner border border-slate-200">
-                    8
-                  </div>
-                </div>
-                <div className="text-center mb-4">
-                  <h3 className="font-bold text-sm text-slate-900 leading-snug">
-                    Esteban Pavez
-                  </h3>
-                  <p className="text-xs text-slate-500">Chile · 34 años</p>
-                </div>
-              </div>
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Partidos
-                  </span>
-                  <span className="font-bold text-slate-800">20</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Goles
-                  </span>
-                  <span className="font-bold text-red-600">1</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">Rol</span>
-                  <span className="font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px]">
-                    Titular
-                  </span>
-                </div>
-              </div>
-            </article>
-            <article className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
-                    #5
-                  </span>
-                  <span className="text-[10px] font-semibold bg-emerald-600 text-white px-2 py-0.5 rounded-full">
-                    Mediocampista
-                  </span>
-                </div>
-                <div className="flex justify-center mb-3">
-                  <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-800 font-extrabold text-xl shadow-inner border border-slate-200">
-                    5
-                  </div>
-                </div>
-                <div className="text-center mb-4">
-                  <h3 className="font-bold text-sm text-slate-900 leading-snug">
-                    Leonardo Gil
-                  </h3>
-                  <p className="text-xs text-slate-500">Chile · 33 años</p>
-                </div>
-              </div>
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Partidos
-                  </span>
-                  <span className="font-bold text-slate-800">18</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Goles
-                  </span>
-                  <span className="font-bold text-red-600">3</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">Rol</span>
-                  <span className="font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px]">
-                    Titular
-                  </span>
-                </div>
-              </div>
-            </article>
-            <article className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
-                    #10
-                  </span>
-                  <span className="text-[10px] font-semibold bg-emerald-600 text-white px-2 py-0.5 rounded-full">
-                    Mediocampista
-                  </span>
-                </div>
-                <div className="flex justify-center mb-3">
-                  <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-800 font-extrabold text-xl shadow-inner border border-slate-200">
-                    10
-                  </div>
-                </div>
-                <div className="text-center mb-4">
-                  <h3 className="font-bold text-sm text-slate-900 leading-snug">
-                    Carlos Palacios
-                  </h3>
-                  <p className="text-xs text-slate-500">Chile · 24 años</p>
-                </div>
-              </div>
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Partidos
-                  </span>
-                  <span className="font-bold text-slate-800">19</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Goles
-                  </span>
-                  <span className="font-bold text-red-600">7</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">Rol</span>
-                  <span className="font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px]">
-                    Titular
-                  </span>
-                </div>
-              </div>
-            </article>
-            <article className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
-                    #7
-                  </span>
-                  <span className="text-[10px] font-semibold bg-emerald-600 text-white px-2 py-0.5 rounded-full">
-                    Mediocampista
-                  </span>
-                </div>
-                <div className="flex justify-center mb-3">
-                  <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-800 font-extrabold text-xl shadow-inner border border-slate-200">
-                    7
-                  </div>
-                </div>
-                <div className="text-center mb-4">
-                  <h3 className="font-bold text-sm text-slate-900 leading-snug">
-                    Carlos Palacios Jr
-                  </h3>
-                  <p className="text-xs text-slate-500">Chile · 21 años</p>
-                </div>
-              </div>
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Partidos
-                  </span>
-                  <span className="font-bold text-slate-800">9</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Goles
-                  </span>
-                  <span className="font-bold text-red-600">1</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">Rol</span>
-                  <span className="font-semibold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded text-[10px]">
-                    Suplente
-                  </span>
-                </div>
-              </div>
-            </article>
-            <article className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
-                    #9
-                  </span>
-                  <span className="text-[10px] font-semibold bg-red-600 text-white px-2 py-0.5 rounded-full">
-                    Delantero
-                  </span>
-                </div>
-                <div className="flex justify-center mb-3">
-                  <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-800 font-extrabold text-xl shadow-inner border border-slate-200">
-                    9
-                  </div>
-                </div>
-                <div className="text-center mb-4">
-                  <h3 className="font-bold text-sm text-slate-900 leading-snug">
-                    Javier Correa
-                  </h3>
-                  <p className="text-xs text-slate-500">Argentina · 31 años</p>
-                </div>
-              </div>
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Partidos
-                  </span>
-                  <span className="font-bold text-slate-800">12</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Goles
-                  </span>
-                  <span className="font-bold text-red-600">8</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">Rol</span>
-                  <span className="font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px]">
-                    Titular
-                  </span>
-                </div>
-              </div>
-            </article>
-            <article className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
-                    #11
-                  </span>
-                  <span className="text-[10px] font-semibold bg-red-600 text-white px-2 py-0.5 rounded-full">
-                    Delantero
-                  </span>
-                </div>
-                <div className="flex justify-center mb-3">
-                  <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-800 font-extrabold text-xl shadow-inner border border-slate-200">
-                    11
-                  </div>
-                </div>
-                <div className="text-center mb-4">
-                  <h3 className="font-bold text-sm text-slate-900 leading-snug">
-                    Marcos Bolados
-                  </h3>
-                  <p className="text-xs text-slate-500">Chile · 28 años</p>
-                </div>
-              </div>
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Partidos
-                  </span>
-                  <span className="font-bold text-slate-800">17</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Goles
-                  </span>
-                  <span className="font-bold text-red-600">4</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">Rol</span>
-                  <span className="font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px]">
-                    Titular
-                  </span>
-                </div>
-              </div>
-            </article>
-            <article className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
-                    #20
-                  </span>
-                  <span className="text-[10px] font-semibold bg-red-600 text-white px-2 py-0.5 rounded-full">
-                    Delantero
-                  </span>
-                </div>
-                <div className="flex justify-center mb-3">
-                  <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-800 font-extrabold text-xl shadow-inner border border-slate-200">
-                    20
-                  </div>
-                </div>
-                <div className="text-center mb-4">
-                  <h3 className="font-bold text-sm text-slate-900 leading-snug">
-                    Alexander Oroz
-                  </h3>
-                  <p className="text-xs text-slate-500">Chile · 22 años</p>
-                </div>
-              </div>
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Partidos
-                  </span>
-                  <span className="font-bold text-slate-800">10</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Goles
-                  </span>
-                  <span className="font-bold text-red-600">2</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">Rol</span>
-                  <span className="font-semibold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded text-[10px]">
-                    Suplente
-                  </span>
-                </div>
-              </div>
-            </article>
-            <article className="bg-white rounded-xl border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">
-                    #29
-                  </span>
-                  <span className="text-[10px] font-semibold bg-red-600 text-white px-2 py-0.5 rounded-full">
-                    Delantero
-                  </span>
-                </div>
-                <div className="flex justify-center mb-3">
-                  <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-800 font-extrabold text-xl shadow-inner border border-slate-200">
-                    29
-                  </div>
-                </div>
-                <div className="text-center mb-4">
-                  <h3 className="font-bold text-sm text-slate-900 leading-snug">
-                    Guillermo Paiva
-                  </h3>
-                  <p className="text-xs text-slate-500">Paraguay · 27 años</p>
-                </div>
-              </div>
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Partidos
-                  </span>
-                  <span className="font-bold text-slate-800">15</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">
-                    Goles
-                  </span>
-                  <span className="font-bold text-red-600">5</span>
-                </div>
-                <div className="text-center">
-                  <span className="block text-[10px] text-slate-400">Rol</span>
-                  <span className="font-semibold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded text-[10px]">
-                    Suplente
-                  </span>
-                </div>
-              </div>
-            </article>
-          </div>
+          )}
         </section>
-        <aside className="lg:col-span-4 flex flex-col space-y-6">
-          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
-              <i className="fa-solid fa-circle-info text-blue-600"></i>
-              Información Institucional
-            </h3>
-            <dl className="space-y-3 text-xs">
-              <div className="flex justify-between items-start">
-                <dt className="text-slate-500 font-medium">Nombre Oficial:</dt>
-                <dd className="text-slate-900 font-bold text-right">
-                  Club Social y Deportivo Colo-Colo
-                </dd>
-              </div>
-              <div className="flex justify-between items-start">
-                <dt className="text-slate-500 font-medium">Ciudad / Región:</dt>
-                <dd className="text-slate-900 font-bold text-right">
-                  Santiago (Macul), Región Metropolitana
-                </dd>
-              </div>
-              <div className="flex justify-between items-center">
-                <dt className="text-slate-500 font-medium">Presidente:</dt>
-                <dd className="text-slate-900 font-bold">Aníbal Mosa</dd>
-              </div>
-              <div className="flex justify-between items-center">
-                <dt className="text-slate-500 font-medium">
-                  Colores Oficiales:
-                </dt>
-                <dd className="text-slate-900 font-bold">Blanco y Negro</dd>
-              </div>
-              <div className="flex justify-between items-center">
-                <dt className="text-slate-500 font-medium">Copas Chile:</dt>
-                <dd className="text-slate-900 font-bold">14 títulos</dd>
-              </div>
-              <div className="flex justify-between items-center">
-                <dt className="text-slate-500 font-medium">Sitio Oficial:</dt>
-                <dd>
-                  <a
-                    className="text-blue-600 hover:underline font-semibold"
-                    href="https://colocolo.cl"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    colocolo.cl
-                  </a>
-                </dd>
-              </div>
+
+        <aside className="space-y-5 lg:col-span-4">
+          <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="mb-4 border-b border-slate-100 pb-2 text-sm font-bold text-slate-900">Información registrada</h2>
+            <dl className="space-y-3 text-sm">
+              <div className="flex justify-between gap-4"><dt className="text-slate-500">Nombre oficial</dt><dd className="text-right font-semibold text-slate-900">{club.nombre}</dd></div>
+              <div className="flex justify-between gap-4"><dt className="text-slate-500">Ciudad</dt><dd className="text-right font-semibold text-slate-900">{club.ciudad}</dd></div>
+              <div className="flex justify-between gap-4"><dt className="text-slate-500">Fundación</dt><dd className="text-right font-semibold text-slate-900">{club.fundacion}</dd></div>
+              <div className="flex justify-between gap-4"><dt className="text-slate-500">Jugadores</dt><dd className="text-right font-semibold text-slate-900">{jugadoresClub.length}</dd></div>
             </dl>
-            <p className="text-[11px] text-slate-500 mt-4 pt-3 border-t border-slate-100 leading-relaxed text-justify">
-              Fundado el 19 de abril de 1925 por un grupo de futbolistas
-              liderados por David Arellano. Es el club más laureado del fútbol
-              profesional chileno y el único del país en ganar la Copa
-              Libertadores de América (1991).
+            <p className="mt-4 border-t border-slate-100 pt-3 text-xs leading-relaxed text-slate-500">
+              Los datos institucionales y la plantilla se cargan desde el registro local del proyecto.
             </p>
-          </div>
-          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 mb-3">
-              <i className="fa-solid fa-location-dot text-red-600"></i>
-              Estadio Principal
-            </h3>
-            <div className="space-y-1 mb-4">
-              <h4 className="text-xs font-bold text-slate-900">
-                Estadio Monumental David Arellano
-              </h4>
-              <p className="text-[11px] text-slate-500">
-                Santiago (Macul) · Región Metropolitana
-              </p>
-            </div>
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
-              <span className="text-slate-500">Aforo / Capacidad:</span>
-              <span className="bg-slate-700 text-white font-bold px-3 py-1 rounded text-xs">
-                47.000 espectadores
-              </span>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
-              <i className="fa-regular fa-calendar-check text-emerald-600"></i>
-              Últimos Partidos
-            </h3>
-            <div className="space-y-3.5">
-              <div className="flex items-center justify-between text-xs pb-3 border-b border-slate-100 last:border-b-0 last:pb-0">
-                <div>
-                  <p className="font-bold text-slate-800">vs U. de Chile</p>
-                  <p className="text-[10px] text-slate-400">Condición: Local</p>
-                </div>
-                <div className="text-right flex flex-col items-end">
-                  <span className="font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[11px] mb-0.5">
-                    2 - 1
-                  </span>
-                  <span className="text-[9px] text-slate-400">Victoria</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-xs pb-3 border-b border-slate-100 last:border-b-0 last:pb-0">
-                <div>
-                  <p className="font-bold text-slate-800">vs Huachipato</p>
-                  <p className="text-[10px] text-slate-400">
-                    Condición: Visita
-                  </p>
-                </div>
-                <div className="text-right flex flex-col items-end">
-                  <span className="font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[11px] mb-0.5">
-                    1 - 0
-                  </span>
-                  <span className="text-[9px] text-slate-400">Victoria</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-xs pb-3 border-b border-slate-100 last:border-b-0 last:pb-0">
-                <div>
-                  <p className="font-bold text-slate-800">vs Coquimbo U.</p>
-                  <p className="text-[10px] text-slate-400">Condición: Local</p>
-                </div>
-                <div className="text-right flex flex-col items-end">
-                  <span className="font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[11px] mb-0.5">
-                    2 - 0
-                  </span>
-                  <span className="text-[9px] text-slate-400">Victoria</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-xs pb-3 border-b border-slate-100 last:border-b-0 last:pb-0">
-                <div>
-                  <p className="font-bold text-slate-800">vs Cobresal</p>
-                  <p className="text-[10px] text-slate-400">
-                    Condición: Visita
-                  </p>
-                </div>
-                <div className="text-right flex flex-col items-end">
-                  <span className="font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[11px] mb-0.5">
-                    2 - 2
-                  </span>
-                  <span className="text-[9px] text-slate-400">Empate</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <div>
-                  <p className="font-bold text-slate-800">vs U. Católica</p>
-                  <p className="text-[10px] text-slate-400">Condición: Local</p>
-                </div>
-                <div className="text-right flex flex-col items-end">
-                  <span className="font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded text-[11px] mb-0.5">
-                    1 - 0
-                  </span>
-                  <span className="text-[9px] text-slate-400">Victoria</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          </section>
         </aside>
       </div>
     </main>

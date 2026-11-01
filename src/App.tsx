@@ -10,13 +10,12 @@ export default function App() {
   return (
     <>
       <Navbar />
-      {/* Rutas: por ahora todo lleva a Jugadores */}
       <Suspense fallback={<div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 1rem' }}>Cargando...</div>}>
         <Routes>
           <Route path="/" element={<Navigate to="/jugadores" replace />} />
           <Route path="/jugadores" element={<PaginaJugadores />} />
-          <Route path="/tournament" element={ <Tournament /> } />
-          <Route path="/club" element={ <Club /> } />
+          <Route path="/tournaments" element={ <Tournament /> } />
+          <Route path="/clubs/:id" element={<Club />} />
           <Route path="*" element={<Navigate to="/jugadores" replace />} />
         </Routes>
       </Suspense>

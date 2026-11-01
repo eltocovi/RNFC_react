@@ -1,6 +1,9 @@
 import { Link, NavLink } from 'react-router';
 
-const ENLACES = [{ ruta: '/jugadores', texto: 'Jugadores' }];
+const ENLACES = [
+  { ruta: '/jugadores', texto: 'Jugadores' },
+  { ruta: '/tournaments', texto: 'Torneo' }
+];
 
 export default function Navbar() {
   return (
