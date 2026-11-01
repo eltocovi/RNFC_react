@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useOutletContext } from 'react-router';
 import Formulario from '../components/Formulario';
 import type { CampoFormulario } from '../components/Formulario';
+import GestionJugadoresGestor from '../components/GestionJugadoresGestor';
 import {
   borrarUsuario,
   crearUsuario,
@@ -9,6 +10,7 @@ import {
   iniciarSesion,
   nombreCompleto,
   obtenerUsuario,
+  obtenerUsuarios,
   rolDeUsuario,
 } from '../services/usuario';
 import type { SesionUsuario } from '../services/usuario';
@@ -29,19 +31,10 @@ interface ContextoAutenticacion {
   cerrarSesion: () => void;
 }
 
-const ROLES: Record<RolUsuario, { etiqueta: string; descripcion: string }> = {
-  UsuarioComun: {
-    etiqueta: 'Usuario común',
-    descripcion: 'Administra sus credenciales y consulta la información pública.',
-  },
-  GestorDeportivo: {
-    etiqueta: 'Gestor deportivo',
-    descripcion: 'Gestiona únicamente los jugadores que tiene asignados.',
-  },
-  Admin: {
-    etiqueta: 'Administrador',
-    descripcion: 'Administra usuarios, jugadores y la información de la plataforma.',
-  },
+const ROLES: Record<RolUsuario, { etiqueta: string }> = {
+  UsuarioComun: { etiqueta: 'Usuario común' },
+  GestorDeportivo: { etiqueta: 'Gestor deportivo' },
+  Admin: { etiqueta: 'Administrador' },
 };
 
 const ESTILO_ROL: Record<RolUsuario, string> = {
@@ -160,17 +153,14 @@ const CAMPOS_PERFIL: CampoFormulario[] = [
     autoComplete: 'email',
     required: true,
   },
-];
-
-const CAMPOS_SEGURIDAD: CampoFormulario[] = [
   {
     name: 'pass',
-    label: 'Nueva contraseña',
+    label: 'Nueva contraseña (opcional)',
     type: 'password',
     placeholder: 'Mínimo 8 caracteres',
     autoComplete: 'new-password',
     minLength: 8,
-    required: true,
+    help: 'Déjala vacía si no quieres cambiarla.',
   },
   {
     name: 'confirmarPass',
@@ -179,7 +169,6 @@ const CAMPOS_SEGURIDAD: CampoFormulario[] = [
     placeholder: 'Repite la nueva contraseña',
     autoComplete: 'new-password',
     minLength: 8,
-    required: true,
   },
 ];
 
@@ -213,8 +202,6 @@ const CAMPOS_ADMIN: CampoFormulario[] = [
   },
 ];
 
-const VALORES_SEGURIDAD = { pass: '', confirmarPass: '' };
-
 function obtenerMensajeError(error: unknown): string {
   return error instanceof Error ? error.message : 'Ocurrió un error inesperado.';
 }
@@ -244,17 +231,18 @@ export default function UserPerfil() {
 
   const [procesandoPerfil, setProcesandoPerfil] = useState(false);
   const [mensajePerfil, setMensajePerfil] = useState<Mensaje | null>(null);
-  const [procesandoSeguridad, setProcesandoSeguridad] = useState(false);
-  const [mensajeSeguridad, setMensajeSeguridad] = useState<Mensaje | null>(null);
-  const [versionSeguridad, setVersionSeguridad] = useState(0);
+  const [versionPerfil, setVersionPerfil] = useState(0);
 
-  const [idBusqueda, setIdBusqueda] = useState('');
-  const [buscandoAdmin, setBuscandoAdmin] = useState(false);
-  const [mensajeBusqueda, setMensajeBusqueda] = useState<Mensaje | null>(null);
+  const [usuariosAdmin, setUsuariosAdmin] = useState<UsuarioPublico[]>([]);
+  const [cargandoUsuariosAdmin, setCargandoUsuariosAdmin] = useState(false);
+  const [errorUsuariosAdmin, setErrorUsuariosAdmin] = useState('');
   const [usuarioAdmin, setUsuarioAdmin] = useState<UsuarioPublico | null>(null);
   const [procesandoAdmin, setProcesandoAdmin] = useState(false);
   const [mensajeAdmin, setMensajeAdmin] = useState<Mensaje | null>(null);
   const [versionAdmin, setVersionAdmin] = useState(0);
+  const [seccionElegida, setSeccionElegida] = useState<
+    'jugadores' | 'configuracion' | 'usuarios' | null
+  >(null);
 
   const usuario =
     sesion && usuarioCargado?.id_usuario === sesion.id_usuario ? usuarioCargado : null;
@@ -305,6 +293,31 @@ export default function UserPerfil() {
         pass: '',
       }
     : {};
+
+  useEffect(() => {
+    if (sesion?.rol !== 'Admin') return;
+
+    let activo = true;
+
+    async function cargarUsuarios(): Promise<void> {
+      setCargandoUsuariosAdmin(true);
+      setErrorUsuariosAdmin('');
+      try {
+        const usuarios = await obtenerUsuarios();
+        if (activo) setUsuariosAdmin(usuarios);
+      } catch (error: unknown) {
+        if (activo) setErrorUsuariosAdmin(obtenerMensajeError(error));
+      } finally {
+        if (activo) setCargandoUsuariosAdmin(false);
+      }
+    }
+
+    void cargarUsuarios();
+
+    return () => {
+      activo = false;
+    };
+  }, [sesion?.id_usuario, sesion?.rol, versionAdmin]);
 
   async function manejarLogin(valores: Record<string, string>): Promise<void> {
     setProcesandoAuth(true);
@@ -360,17 +373,30 @@ export default function UserPerfil() {
     setMensajePerfil(null);
 
     try {
+      const pass = valores.pass.trim();
+      const confirmarPass = valores.confirmarPass.trim();
+      if ((pass || confirmarPass) && pass !== confirmarPass) {
+        throw new Error('Las contraseñas no coinciden.');
+      }
+
       const actualizado = await editarUsuario(usuario.id_usuario, {
         pnombre: valores.pnombre,
         snombre: valores.snombre,
         papellido: valores.papellido,
         sapellido: valores.sapellido,
         correo: valores.correo,
+        ...(pass ? { pass } : {}),
       });
 
       setUsuarioCargado(actualizado);
       await refrescarSesion();
-      setMensajePerfil({ tipo: 'exito', texto: 'Datos personales actualizados correctamente.' });
+      setVersionPerfil((version) => version + 1);
+      setMensajePerfil({
+        tipo: 'exito',
+        texto: pass
+          ? 'Datos personales y contraseña actualizados correctamente.'
+          : 'Datos personales actualizados correctamente.',
+      });
     } catch (error) {
       setMensajePerfil({ tipo: 'error', texto: obtenerMensajeError(error) });
     } finally {
@@ -378,54 +404,15 @@ export default function UserPerfil() {
     }
   }
 
-  async function manejarSeguridad(valores: Record<string, string>): Promise<void> {
-    if (!usuario) {
-      return;
-    }
-
-    setProcesandoSeguridad(true);
-    setMensajeSeguridad(null);
-
-    try {
-      if (valores.pass !== valores.confirmarPass) {
-        throw new Error('Las contraseñas no coinciden.');
-      }
-
-      await editarUsuario(usuario.id_usuario, { pass: valores.pass });
-      setVersionSeguridad((version) => version + 1);
-      setMensajeSeguridad({ tipo: 'exito', texto: 'Contraseña actualizada correctamente.' });
-    } catch (error) {
-      setMensajeSeguridad({ tipo: 'error', texto: obtenerMensajeError(error) });
-    } finally {
-      setProcesandoSeguridad(false);
-    }
-  }
-
-  async function buscarUsuarioAdmin(): Promise<void> {
-    const id = Number.parseInt(idBusqueda, 10);
-
-    if (!Number.isInteger(id) || id <= 0) {
-      setMensajeBusqueda({ tipo: 'error', texto: 'Ingresa un ID de usuario válido.' });
-      setUsuarioAdmin(null);
-      return;
-    }
-
-    setBuscandoAdmin(true);
-    setMensajeBusqueda(null);
+  async function seleccionarUsuarioAdmin(id: number): Promise<void> {
     setMensajeAdmin(null);
 
     try {
       const encontrado = await obtenerUsuario(id);
       setUsuarioAdmin(encontrado);
-      setMensajeBusqueda({
-        tipo: 'exito',
-        texto: `Usuario #${id} encontrado: ${nombreCompleto(encontrado)}.`,
-      });
     } catch (error) {
       setUsuarioAdmin(null);
-      setMensajeBusqueda({ tipo: 'error', texto: obtenerMensajeError(error) });
-    } finally {
-      setBuscandoAdmin(false);
+      setMensajeAdmin({ tipo: 'error', texto: obtenerMensajeError(error) });
     }
   }
 
@@ -450,6 +437,11 @@ export default function UserPerfil() {
 
       const actualizado = await editarUsuario(usuarioAdmin.id_usuario, cambios);
       setUsuarioAdmin(actualizado);
+      setUsuariosAdmin((usuarios) =>
+        usuarios.map((item) =>
+          item.id_usuario === actualizado.id_usuario ? actualizado : item,
+        ),
+      );
       setVersionAdmin((version) => version + 1);
       await refrescarSesion();
       setMensajeAdmin({ tipo: 'exito', texto: 'Usuario actualizado correctamente.' });
@@ -482,9 +474,10 @@ export default function UserPerfil() {
         tipo: 'exito',
         texto: `El usuario ${nombreCompleto(usuarioAdmin)} fue eliminado.`,
       });
+      setUsuariosAdmin((usuarios) =>
+        usuarios.filter((item) => item.id_usuario !== usuarioAdmin.id_usuario),
+      );
       setUsuarioAdmin(null);
-      setMensajeBusqueda(null);
-      setIdBusqueda('');
     } catch (error) {
       setMensajeAdmin({ tipo: 'error', texto: obtenerMensajeError(error) });
     } finally {
@@ -650,6 +643,17 @@ export default function UserPerfil() {
 
   const rolActual: RolUsuario = usuario ? rolDeUsuario(usuario) : sesion.rol;
   const esAdmin = sesion.rol === 'Admin';
+  const seccionPredeterminada =
+    sesion.rol === 'GestorDeportivo'
+      ? 'jugadores'
+      : sesion.rol === 'Admin'
+        ? 'usuarios'
+        : 'configuracion';
+  const seccionActiva =
+    (seccionElegida === 'jugadores' && sesion.rol !== 'GestorDeportivo') ||
+    (seccionElegida === 'usuarios' && !esAdmin)
+      ? seccionPredeterminada
+      : seccionElegida ?? seccionPredeterminada;
 
   return (
     <>
@@ -763,92 +767,73 @@ export default function UserPerfil() {
           )}
 
           {usuario && (
-            <>
-              <div className="grid gap-6 lg:grid-cols-2">
-                <Formulario
-                  key={`perfil-${usuario.id_usuario}-${usuario.correo}-${usuario.pnombre}-${usuario.papellido}`}
-                  campos={CAMPOS_PERFIL}
-                  valoresIniciales={valoresPerfil}
-                  onSubmit={manejarPerfil}
-                  titulo="Datos personales"
-                  descripcion="Mantén actualizada la información básica de tu cuenta."
-                  textoBoton="Guardar cambios"
-                  cargando={procesandoPerfil}
-                  error={mensajePerfil?.tipo === 'error' ? mensajePerfil.texto : ''}
-                  exito={mensajePerfil?.tipo === 'exito' ? mensajePerfil.texto : ''}
-                  columnas={2}
-                />
+            <div className="grid items-start gap-6 lg:grid-cols-[250px_minmax(0,1fr)]">
+              <aside className="rounded-3xl border border-slate-200 bg-white p-4 shadow-lg shadow-slate-900/5 lg:sticky lg:top-28">
+                <div className="border-b border-slate-100 px-3 pb-4">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">
+                    Mi espacio
+                  </p>
+                  <p className="mt-1 truncate font-bold text-slate-800">{sesion.nombre}</p>
+                  <p className="mt-1 text-xs text-slate-500">{ROLES[rolActual].etiqueta}</p>
+                </div>
+                <nav className="mt-3 space-y-1" aria-label="Navegación del perfil">
+                  {[
+                    ...(rolActual === 'GestorDeportivo'
+                      ? [{ id: 'jugadores' as const, label: 'Mis jugadores', icon: '⚽' }]
+                      : []),
+                    { id: 'configuracion' as const, label: 'Configuración de usuario', icon: '⚙' },
+                    ...(esAdmin
+                      ? [{ id: 'usuarios' as const, label: 'Administrar usuarios', icon: '♙' }]
+                      : []),
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setSeccionElegida(item.id)}
+                      aria-current={seccionActiva === item.id ? 'page' : undefined}
+                      className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition ${
+                        seccionActiva === item.id
+                          ? 'bg-rnfc-red/10 text-rnfc-red'
+                          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      }`}
+                    >
+                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-base">
+                        {item.icon}
+                      </span>
+                      {item.label}
+                    </button>
+                  ))}
+                </nav>
+                <button
+                  type="button"
+                  onClick={cerrarSesion}
+                  className="mt-4 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-bold text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+                >
+                  Cerrar sesión
+                </button>
+              </aside>
 
-                <div className="space-y-6">
+              <div className="min-w-0">
+                {seccionActiva === 'jugadores' && rolActual === 'GestorDeportivo' && (
+                  <GestionJugadoresGestor gestorId={sesion.id_usuario} />
+                )}
+                {seccionActiva === 'configuracion' && (
                   <Formulario
-                    key={`seguridad-${usuario.id_usuario}-${versionSeguridad}`}
-                    campos={CAMPOS_SEGURIDAD}
-                    valoresIniciales={VALORES_SEGURIDAD}
-                    onSubmit={manejarSeguridad}
-                    titulo="Seguridad"
-                    descripcion="Cambia tu contraseña cuando lo necesites. Debe tener al menos 8 caracteres."
-                    textoBoton="Actualizar contraseña"
-                    cargando={procesandoSeguridad}
-                    error={mensajeSeguridad?.tipo === 'error' ? mensajeSeguridad.texto : ''}
-                    exito={mensajeSeguridad?.tipo === 'exito' ? mensajeSeguridad.texto : ''}
+                    key={`perfil-${usuario.id_usuario}-${versionPerfil}-${usuario.correo}-${usuario.pnombre}-${usuario.papellido}`}
+                    campos={CAMPOS_PERFIL}
+                    valoresIniciales={valoresPerfil}
+                    onSubmit={manejarPerfil}
+                    titulo="Datos personales"
+                    descripcion="Actualiza tus datos y, si quieres, cambia tu contraseña. Para conservarla, deja los campos de contraseña vacíos."
+                    textoBoton="Guardar cambios"
+                    cargando={procesandoPerfil}
+                    error={mensajePerfil?.tipo === 'error' ? mensajePerfil.texto : ''}
+                    exito={mensajePerfil?.tipo === 'exito' ? mensajePerfil.texto : ''}
                     columnas={2}
                   />
+                )}
 
-                  <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-900/5">
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-rnfc-red/10 text-rnfc-red">
-                        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                          <path
-                            d="M12 3 4.5 6v5.5c0 4.4 3.2 8.4 7.5 9.5 4.3-1.1 7.5-5.1 7.5-9.5V6L12 3Z"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            strokeLinejoin="round"
-                          />
-                          <path
-                            d="m9 12 2 2 4-4"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </span>
-                      <h2 className="font-display text-2xl tracking-wide text-slate-900">
-                        Permisos de tu rol
-                      </h2>
-                    </div>
-                    <p className="mt-3 text-sm leading-relaxed text-slate-500">
-                      {ROLES[rolActual].descripcion}
-                    </p>
-                    <dl className="mt-4 space-y-2 border-t border-slate-100 pt-4 text-sm">
-                      <div className="flex items-center justify-between gap-3">
-                        <dt className="text-slate-500">Editar mis credenciales</dt>
-                        <dd className="font-bold text-emerald-600">Permitido</dd>
-                      </div>
-                      <div className="flex items-center justify-between gap-3">
-                        <dt className="text-slate-500">Editar otros usuarios</dt>
-                        <dd className={`font-bold ${esAdmin ? 'text-emerald-600' : 'text-slate-400'}`}>
-                          {esAdmin ? 'Permitido' : 'No permitido'}
-                        </dd>
-                      </div>
-                      <div className="flex items-center justify-between gap-3">
-                        <dt className="text-slate-500">Gestionar jugadores</dt>
-                        <dd
-                          className={`font-bold ${
-                            esAdmin || rolActual === 'GestorDeportivo'
-                              ? 'text-emerald-600'
-                              : 'text-slate-400'
-                          }`}
-                        >
-                          {esAdmin || rolActual === 'GestorDeportivo' ? 'Permitido' : 'No permitido'}
-                        </dd>
-                      </div>
-                    </dl>
-                  </div>
-                </div>
-              </div>
-
-              {esAdmin && (
+              {seccionActiva === 'usuarios' && esAdmin && (
                 <div className="mt-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-900/5 sm:p-8">
                   <div className="flex flex-wrap items-end justify-between gap-4">
                     <div>
@@ -859,54 +844,72 @@ export default function UserPerfil() {
                         Administración de usuarios
                       </h2>
                       <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-500">
-                        Busca un usuario por su ID para editar sus datos, cambiar su rol o eliminarlo
-                        de la plataforma.
+                        Selecciona un usuario de la lista para editar su cuenta o administrar su rol.
                       </p>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => setVersionAdmin((version) => version + 1)}
+                      disabled={cargandoUsuariosAdmin}
+                      className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition hover:border-rnfc-red hover:text-rnfc-red disabled:opacity-50"
+                    >
+                      Actualizar lista
+                    </button>
                   </div>
 
-                  <form
-                    onSubmit={(evento) => {
-                      evento.preventDefault();
-                      void buscarUsuarioAdmin();
-                    }}
-                    className="mt-6 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-end"
-                  >
-                    <div className="flex-1">
-                      <label
-                        htmlFor="buscar-usuario"
-                        className="mb-2 block text-[0.72rem] font-bold uppercase tracking-[0.14em] text-slate-500"
-                      >
-                        ID del usuario
-                      </label>
-                      <input
-                        id="buscar-usuario"
-                        type="number"
-                        min="1"
-                        value={idBusqueda}
-                        onChange={(evento) => setIdBusqueda(evento.target.value)}
-                        placeholder="Ej: 2"
-                        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-rnfc-red focus:ring-4 focus:ring-rnfc-red/10"
-                      />
+                  {errorUsuariosAdmin && (
+                    <div role="alert" className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                      {errorUsuariosAdmin}
                     </div>
-                    <button
-                      type="submit"
-                      disabled={buscandoAdmin}
-                      className="rounded-xl bg-rnfc-red px-6 py-3 text-sm font-bold text-white transition hover:bg-rnfc-red-dark disabled:cursor-not-allowed disabled:opacity-70"
-                    >
-                      {buscandoAdmin ? 'Buscando...' : 'Buscar usuario'}
-                    </button>
-                  </form>
+                  )}
 
-                  {mensajeBusqueda && (
-                    <div
-                      className={`mt-4 rounded-xl border px-4 py-3 text-sm ${
-                        mensajeBusqueda.tipo === 'error'
-                          ? 'border-red-200 bg-red-50 text-red-700'
-                          : 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                      }`}
-                    >
-                      {mensajeBusqueda.texto}
+                  {cargandoUsuariosAdmin ? (
+                    <p className="py-10 text-center text-sm text-slate-500">Cargando usuarios...</p>
+                  ) : usuariosAdmin.length === 0 && !errorUsuariosAdmin ? (
+                    <p className="mt-5 rounded-2xl bg-slate-50 p-8 text-center text-sm text-slate-500">
+                      No hay usuarios registrados.
+                    </p>
+                  ) : (
+                    <ul className="mt-6 divide-y divide-slate-100 rounded-2xl border border-slate-100">
+                      {usuariosAdmin.map((item) => {
+                        const rol = rolDeUsuario(item);
+                        const seleccionado = usuarioAdmin?.id_usuario === item.id_usuario;
+                        return (
+                          <li
+                            key={item.id_usuario}
+                            className={`flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between ${
+                              seleccionado ? 'bg-rnfc-red/5' : 'bg-white'
+                            }`}
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate font-bold text-slate-900">
+                                {nombreCompleto(item)}
+                              </p>
+                              <p className="mt-1 truncate text-sm text-slate-500">{item.correo}</p>
+                              <div className="mt-2 flex flex-wrap items-center gap-2">
+                                <span className={`rounded-full border px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide ${ESTILO_ROL[rol]}`}>
+                                  {ROLES[rol].etiqueta}
+                                </span>
+                                <span className="text-xs text-slate-400">ID #{item.id_usuario}</span>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => void seleccionarUsuarioAdmin(item.id_usuario)}
+                              disabled={procesandoAdmin}
+                              className="shrink-0 rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition hover:border-rnfc-red hover:text-rnfc-red disabled:opacity-50"
+                            >
+                              {seleccionado ? 'Seleccionado' : 'Administrar'}
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+
+                  {mensajeAdmin?.tipo === 'error' && (
+                    <div role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                      {mensajeAdmin.texto}
                     </div>
                   )}
 
@@ -944,7 +947,8 @@ export default function UserPerfil() {
                   )}
                 </div>
               )}
-            </>
+              </div>
+            </div>
           )}
         </div>
       </section>

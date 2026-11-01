@@ -54,33 +54,6 @@ const VALORES = [
   },
 ];
 
-const ROLES = [
-  {
-    nombre: 'Usuario común',
-    descripcion:
-      'Puede crear su cuenta, iniciar sesión y administrar únicamente sus propias credenciales. Accede a la información pública de la plataforma.',
-    permisos: ['Editar su correo y contraseña', 'Actualizar sus datos personales', 'Consultar el contenido público'],
-    etiqueta: 'Acceso básico',
-    color: 'border-sky-200 bg-sky-50 text-sky-700',
-  },
-  {
-    nombre: 'Gestor deportivo',
-    descripcion:
-      'Administra la información de los jugadores que tiene asignados: puede agregarlos, modificarlos o quitarlos. Solo ve los registros que le pertenecen.',
-    permisos: ['Agregar jugadores', 'Modificar sus jugadores', 'Eliminar sus registros'],
-    etiqueta: 'Gestión deportiva',
-    color: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-  },
-  {
-    nombre: 'Administrador',
-    descripcion:
-      'Tiene control total sobre la plataforma. Puede editar cualquier usuario, cambiar roles y supervisar la información registrada por los gestores.',
-    permisos: ['Editar cualquier usuario', 'Asignar roles', 'Supervisar toda la información'],
-    etiqueta: 'Acceso total',
-    color: 'border-red-200 bg-red-50 text-red-700',
-  },
-];
-
 const HITOS = [
   {
     anio: '2024',
@@ -207,63 +180,6 @@ export default function QuienesSomos() {
                   {valor.titulo}
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-500">{valor.texto}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="bg-white py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="max-w-2xl">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-rnfc-red">
-              Permisos claros
-            </p>
-            <h2 className="mt-2 font-display text-4xl uppercase tracking-wide text-slate-900 sm:text-5xl">
-              Tres roles, una misma pasión
-            </h2>
-            <p className="mt-3 text-sm leading-relaxed text-slate-500">
-              Cada perfil tiene responsabilidades definidas para proteger la información y mantener
-              la plataforma ordenada.
-            </p>
-          </div>
-
-          <div className="mt-10 grid gap-6 lg:grid-cols-3">
-            {ROLES.map((rol) => (
-              <article
-                key={rol.nombre}
-                className="flex flex-col rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-900/5"
-              >
-                <span
-                  className={`inline-flex w-fit rounded-full border px-3 py-1 text-[0.62rem] font-bold uppercase tracking-wider ${rol.color}`}
-                >
-                  {rol.etiqueta}
-                </span>
-                <h3 className="mt-4 font-display text-3xl tracking-wide text-slate-900">
-                  {rol.nombre}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-slate-500">{rol.descripcion}</p>
-                <ul className="mt-5 space-y-2 border-t border-slate-100 pt-5">
-                  {rol.permisos.map((permiso) => (
-                    <li key={permiso} className="flex items-start gap-2 text-sm text-slate-600">
-                      <svg
-                        className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        aria-hidden="true"
-                      >
-                        <path
-                          d="m5 12 4.5 4.5L19 7"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      {permiso}
-                    </li>
-                  ))}
-                </ul>
               </article>
             ))}
           </div>

@@ -6,6 +6,7 @@ export type TipoCampo =
   | 'email'
   | 'password'
   | 'number'
+  | 'date'
   | 'textarea'
   | 'select';
 

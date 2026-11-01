@@ -12,12 +12,19 @@ const ENLACES = [
   { texto: 'Inicio', ruta: '/' },
   { texto: 'Quiénes somos', ruta: '/quienes-somos' },
   { texto: 'Jugadores', ruta: '/jugadores' },
-  { texto: 'Torneo', ruta: '/tournaments' },
   { texto: 'Clubes', ruta: '/clubs' },
-  { texto: 'Competiciones', ruta: '/#competiciones' },
-  { texto: 'Jugadores destacados', ruta: '/#jugadores' },
   { texto: 'Estadísticas', ruta: '/#estadisticas' },
   { texto: 'Contacto', ruta: '/contacto' },
+];
+
+const COMPETICIONES = [
+  { texto: 'Liga de Primera', ruta: '/tournaments' },
+  { texto: 'Liga de Ascenso', ruta: '/#competiciones' },
+  { texto: 'Liga Femenina', ruta: '/#competiciones' },
+  { texto: 'Liga de Segunda', ruta: '/#competiciones' },
+  { texto: 'Copa Chile', ruta: '/#competiciones' },
+  { texto: 'Supercopa de Chile', ruta: '/#competiciones' },
+  { texto: 'Copa de la Liga', ruta: '/#competiciones' },
 ];
 
 function iniciales(nombre: string): string {
@@ -47,7 +54,7 @@ export default function Navbar({ sesion, onCerrarSesion }: NavbarProps) {
   }
 
   function claseEnlace({ isActive }: { isActive: boolean }): string {
-    return `relative rounded-full px-3 py-2 text-sm font-semibold transition ${
+    return `relative whitespace-nowrap rounded-full px-2 py-2 text-sm font-semibold transition ${
       isActive ? 'bg-white/15 text-white' : 'text-white/75 hover:bg-white/10 hover:text-white'
     }`;
   }
@@ -61,24 +68,24 @@ export default function Navbar({ sesion, onCerrarSesion }: NavbarProps) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-gradient-to-r from-rnfc-red-dark via-rnfc-red to-[#a30f22] shadow-lg shadow-rnfc-red-dark/20">
-      <div className="mx-auto flex min-h-20 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
-        <Link to="/" onClick={cerrarMenu} className="flex shrink-0 items-center gap-3">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10 p-1 ring-1 ring-white/25">
+      <div className="mx-auto flex min-h-16 max-w-screen-2xl items-center gap-3 px-3 sm:px-5 lg:px-6">
+        <Link to="/" onClick={cerrarMenu} className="flex shrink-0 items-center gap-2">
+          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 p-1 ring-1 ring-white/25">
             <img
               src="/assets/escudo_rnfc.png"
               alt="Escudo del Registro Nacional del Fútbol Chileno"
               className="h-full w-full object-contain drop-shadow"
             />
           </span>
-          <span className="hidden leading-tight text-white sm:block">
-            <span className="block font-display text-2xl tracking-[0.18em]">RNFC</span>
-            <span className="block max-w-44 text-[0.58rem] font-semibold uppercase leading-tight tracking-[0.15em] text-white/65">
+          <span className="hidden leading-tight text-white xl:block">
+            <span className="block font-display text-xl tracking-[0.16em]">RNFC</span>
+            <span className="block max-w-40 text-[0.52rem] font-semibold uppercase leading-tight tracking-[0.12em] text-white/65">
               Registro Nacional del Fútbol Chileno
             </span>
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-0.5 xl:flex" aria-label="Navegación principal">
+        <nav className="hidden min-w-0 flex-1 items-center justify-center gap-0 xl:flex" aria-label="Navegación principal">
           {ENLACES.map((enlace) => {
             const esSeccion = enlace.ruta.startsWith('/#');
             const activo = esSeccion
@@ -89,7 +96,7 @@ export default function Navbar({ sesion, onCerrarSesion }: NavbarProps) {
               <Link
                 key={enlace.ruta}
                 to={enlace.ruta}
-                className={`relative rounded-full px-3 py-2 text-sm font-semibold transition ${
+                className={`relative rounded-full px-2 py-2 text-sm font-semibold transition ${
                   activo
                     ? 'bg-white/15 text-white'
                     : 'text-white/75 hover:bg-white/10 hover:text-white'
@@ -108,18 +115,44 @@ export default function Navbar({ sesion, onCerrarSesion }: NavbarProps) {
               </NavLink>
             );
           })}
+          <div className="group relative flex h-full shrink-0 items-center">
+            <Link
+              to="/#competiciones"
+              className={`flex items-center whitespace-nowrap rounded-full px-2 py-2 text-sm font-semibold leading-5 transition ${
+                enlaceSeccionActivo('/#competiciones')
+                  ? 'bg-white/15 text-white'
+                  : 'text-white/75 hover:bg-white/10 hover:text-white'
+              }`}
+              aria-haspopup="true"
+            >
+              Competiciones
+            </Link>
+            <div className="invisible absolute left-0 top-full z-50 min-w-56 pt-2 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white py-2 shadow-xl">
+                {COMPETICIONES.map((competicion) => (
+                  <Link
+                    key={competicion.texto}
+                    to={competicion.ruta}
+                    className="block whitespace-nowrap px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 hover:text-rnfc-red"
+                  >
+                    {competicion.texto}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
         </nav>
 
-        <div className="ml-auto hidden items-center gap-3 lg:flex">
-          <BuscadorNavbar className="w-64 xl:w-72" />
+        <div className="ml-auto hidden shrink-0 items-center gap-2 xl:flex">
+          <BuscadorNavbar className="w-44 xl:w-52" />
           {sesion ? (
             <div className="flex items-center gap-2">
               <Link
                 to="/perfil"
-                className="flex max-w-48 items-center gap-2 rounded-full border border-white/20 bg-white/10 py-1.5 pl-1.5 pr-3 text-white transition hover:bg-white/20"
+                className="flex max-w-40 items-center gap-2 rounded-full border border-white/20 bg-white/10 py-1 pl-1 pr-2 text-white transition hover:bg-white/20"
                 title="Ir a mi perfil"
               >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-xs font-extrabold text-rnfc-red">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-[0.65rem] font-extrabold text-rnfc-red">
                   {iniciales(sesion.nombre)}
                 </span>
                 <span className="truncate text-xs font-bold">{sesion.nombre}</span>
@@ -129,7 +162,7 @@ export default function Navbar({ sesion, onCerrarSesion }: NavbarProps) {
                 onClick={manejarCierreSesion}
                 aria-label="Cerrar sesión"
                 title="Cerrar sesión"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 text-white/75 transition hover:border-red-300/40 hover:bg-red-950/30 hover:text-white"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-white/75 transition hover:border-red-300/40 hover:bg-red-950/30 hover:text-white"
               >
                 <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path
@@ -161,7 +194,7 @@ export default function Navbar({ sesion, onCerrarSesion }: NavbarProps) {
           )}
         </div>
 
-        <div className="ml-auto flex items-center gap-2 lg:hidden">
+        <div className="ml-auto flex items-center gap-2 xl:hidden">
           <Link
             to="/perfil"
             className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white"
@@ -207,12 +240,12 @@ export default function Navbar({ sesion, onCerrarSesion }: NavbarProps) {
       </div>
 
       {menuAbierto && (
-        <div id="menu-movil" className="border-t border-white/10 bg-rnfc-red-dark/95 px-4 pb-5 pt-4 lg:hidden">
+        <div id="menu-movil" className="border-t border-white/10 bg-rnfc-red-dark/95 px-4 pb-5 pt-4 xl:hidden">
           <BuscadorNavbar onNavegar={cerrarMenu} className="mb-4" />
           <nav className="grid gap-1" aria-label="Navegación móvil">
             {ENLACES.map((enlace) => (
               <Link
-                key={enlace.texto}
+                key={enlace.ruta}
                 to={enlace.ruta}
                 onClick={cerrarMenu}
                 className="rounded-xl px-3 py-2.5 text-sm font-semibold text-white/85 transition hover:bg-white/10 hover:text-white"
@@ -220,6 +253,26 @@ export default function Navbar({ sesion, onCerrarSesion }: NavbarProps) {
                 {enlace.texto}
               </Link>
             ))}
+            <details className="group rounded-xl">
+              <summary className="cursor-pointer list-none rounded-xl px-3 py-2.5 text-sm font-semibold text-white/85 transition hover:bg-white/10 hover:text-white">
+                Competiciones
+                <span className="float-right transition group-open:rotate-180" aria-hidden="true">
+                  ▾
+                </span>
+              </summary>
+              <div className="ml-3 grid border-l border-white/20 py-1 pl-3">
+                {COMPETICIONES.map((competicion) => (
+                  <Link
+                    key={competicion.texto}
+                    to={competicion.ruta}
+                    onClick={cerrarMenu}
+                    className="rounded-lg px-3 py-2 text-sm text-white/75 transition hover:bg-white/10 hover:text-white"
+                  >
+                    {competicion.texto}
+                  </Link>
+                ))}
+              </div>
+            </details>
           </nav>
           <div className="mt-4 border-t border-white/10 pt-4">
             {sesion ? (

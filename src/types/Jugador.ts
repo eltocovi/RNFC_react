@@ -17,6 +17,7 @@ export interface Jugador {
   pieDominante: PieDominante;
   dorsal: number;
   clubId: number;
+  gestorId?: number;
   partidos: number;
   goles: number;
 }

@@ -738,6 +738,21 @@
       "clubId": 4,
       "partidos": 14,
       "goles": 3
+    },
+    {
+      "nombre": "Maximiliano",
+      "apellido": "Chandia",
+      "fechaNacimiento": "2008-03-06",
+      "nacionalidad": "Chilena",
+      "dorsal": 1,
+      "posicion": "Arquero",
+      "pieDominante": "Diestro",
+      "clubId": 1,
+      "gestorId": 2,
+      "id": 50,
+      "id_usuario": 50,
+      "partidos": 0,
+      "goles": 0
     }
   ],
   "posiciones": [
