@@ -3,6 +3,9 @@ import { Link } from 'react-router';
 const ENLACES = [
   { texto: 'Inicio', ruta: '/' },
   { texto: 'Quiénes somos', ruta: '/quienes-somos' },
+  { texto: 'Jugadores', ruta: '/jugadores' },
+  { texto: 'Torneo', ruta: '/tournaments' },
+  { texto: 'Clubes', ruta: '/clubs' },
   { texto: 'Contacto', ruta: '/contacto' },
   { texto: 'Mi perfil', ruta: '/perfil' },
 ];

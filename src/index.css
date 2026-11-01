@@ -10,6 +10,12 @@
   --color-rnfc-blue: #0b1a30;
   --color-rnfc-navy: #140083;
   --color-rnfc-gold: #f4b400;
+  --color-rnfc-rojo: #e00000;
+  --color-rnfc-rojo-oscuro: #c00000;
+  --color-rnfc-granate: #7a0000;
+  --color-rnfc-azul: #0b1a30;
+  --color-rnfc-indigo: #140083;
+  --color-rnfc-fondo: #f5f7fa;
 }
 
 @layer base {
@@ -18,7 +24,7 @@
   }
 
   body {
-    @apply bg-slate-50 font-sans text-slate-800 antialiased;
+    @apply bg-rnfc-fondo font-sans text-slate-800 antialiased;
   }
 
   h1,
@@ -49,3 +55,7 @@
     display: none;
   }
 }
+
+.badge-v { background-color: #10b981; }
+.badge-e { background-color: #64748b; }
+.badge-d { background-color: #ef4444; }

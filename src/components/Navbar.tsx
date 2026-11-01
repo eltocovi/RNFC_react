@@ -11,8 +11,11 @@ interface NavbarProps {
 const ENLACES = [
   { texto: 'Inicio', ruta: '/' },
   { texto: 'Quiénes somos', ruta: '/quienes-somos' },
+  { texto: 'Jugadores', ruta: '/jugadores' },
+  { texto: 'Torneo', ruta: '/tournaments' },
+  { texto: 'Clubes', ruta: '/clubs' },
   { texto: 'Competiciones', ruta: '/#competiciones' },
-  { texto: 'Jugadores', ruta: '/#jugadores' },
+  { texto: 'Jugadores destacados', ruta: '/#jugadores' },
   { texto: 'Estadísticas', ruta: '/#estadisticas' },
   { texto: 'Contacto', ruta: '/contacto' },
 ];
@@ -84,7 +87,7 @@ export default function Navbar({ sesion, onCerrarSesion }: NavbarProps) {
 
             return esSeccion ? (
               <Link
-                key={enlace.texto}
+                key={enlace.ruta}
                 to={enlace.ruta}
                 className={`relative rounded-full px-3 py-2 text-sm font-semibold transition ${
                   activo
@@ -96,7 +99,7 @@ export default function Navbar({ sesion, onCerrarSesion }: NavbarProps) {
               </Link>
             ) : (
               <NavLink
-                key={enlace.texto}
+                key={enlace.ruta}
                 to={enlace.ruta}
                 end={enlace.ruta === '/'}
                 className={claseEnlace}
