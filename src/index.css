@@ -1,2 +1,51 @@
-/* Carga todo Tailwind CSS (v4). No se necesita nada más. */
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Roboto", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Bebas Neue", "Arial Narrow", Impact, sans-serif;
+
+  --color-rnfc-red: #b30018;
+  --color-rnfc-red-dark: #7a0000;
+  --color-rnfc-red-light: #d21f2b;
+  --color-rnfc-blue: #0b1a30;
+  --color-rnfc-navy: #140083;
+  --color-rnfc-gold: #f4b400;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-slate-50 font-sans text-slate-800 antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  ::selection {
+    background-color: var(--color-rnfc-red);
+    color: #ffffff;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  input[type="search"]::-webkit-search-cancel-button {
+    display: none;
+  }
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
