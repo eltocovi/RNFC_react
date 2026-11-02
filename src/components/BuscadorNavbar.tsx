@@ -45,6 +45,20 @@ const DESTINOS: DestinoBusqueda[] = [
     claves: 'perfil usuario sesion login ingresar cuenta credenciales contrasena password',
   },
   {
+    titulo: 'Jugadores',
+    descripcion: 'Listado de jugadores con búsqueda y filtros por club, posición y nacionalidad.',
+    ruta: '/jugadores',
+    tipo: 'Página',
+    claves: 'jugadores futbolistas plantel listado posicion nacionalidad pie dorsal',
+  },
+  {
+    titulo: 'Clubes',
+    descripcion: 'Ficha de los clubes con su plantel.',
+    ruta: '/clubs',
+    tipo: 'Página',
+    claves: 'clubes club equipos equipo plantel escudo estadio',
+  },
+  {
     titulo: 'Competiciones',
     descripcion: 'Ligas, copas y torneos del fútbol chileno.',
     ruta: '/#competiciones',
