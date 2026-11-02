@@ -1,4 +1,10 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
+import TarjetaRanking from '../components/TarjetaRanking';
+import { ID_LIGA_PRIMERA, obtenerEstadisticasPorCompeticion } from '../services/estadisticas';
+import { CATEGORIAS_RANKING } from '../types/Estadistica';
+import type { EstadisticaJugador } from '../types/Estadistica';
+import { calcularRanking } from '../utils/estadisticas';
 
 const COMPETICIONES = [
   { nombre: 'Liga de Primera', imagen: '/assets/liga_primera.png' },
@@ -40,103 +46,25 @@ const JUGADORES_DESTACADOS = [
   },
 ];
 
-const ESTADISTICAS = [
-  {
-    categoria: 'Goleadores',
-    unidad: 'Goles',
-    tipo: 'goles',
-    jugadores: [
-      { posicion: 1, nombre: 'Fernando Zampedri', club: 'U. Católica', valor: 25 },
-      { posicion: 2, nombre: 'Daniel Castro Santibáñez', club: 'Deportes Limache', valor: 13 },
-      { posicion: 3, nombre: 'Javier Correa', club: 'Colo-Colo', valor: 12 },
-      { posicion: 4, nombre: 'Alan Medina Silva', club: 'Everton', valor: 11 },
-      { posicion: 5, nombre: 'Eduardo Vargas', club: 'U. de Chile', valor: 9 },
-    ],
-  },
-  {
-    categoria: 'Asistencias',
-    unidad: 'Asist.',
-    tipo: 'asistencias',
-    jugadores: [
-      { posicion: 1, nombre: 'Jean Meneses', club: 'Deportes Limache', valor: 9 },
-      { posicion: 1, nombre: 'Kevin Méndez', club: 'U. La Calera', valor: 9 },
-      { posicion: 3, nombre: 'Daniel Castro Santibáñez', club: 'Deportes Limache', valor: 7 },
-      { posicion: 3, nombre: 'Jeisson Vargas', club: 'La Serena', valor: 7 },
-      { posicion: 3, nombre: 'Juan Cornejo', club: 'Coquimbo Unido', valor: 7 },
-    ],
-  },
-  {
-    categoria: 'Tarjetas amarillas',
-    unidad: 'T. amarillas',
-    tipo: 'amarillas',
-    jugadores: [
-      { posicion: 1, nombre: 'Cristián Cuevas', club: 'U. Católica', valor: 10 },
-      { posicion: 2, nombre: 'Arturo Vidal', club: 'Colo-Colo', valor: 8 },
-      { posicion: 2, nombre: 'Cristhofer Mesías', club: 'Univ. Concepción', valor: 8 },
-      { posicion: 2, nombre: 'Daniel Gutiérrez', club: 'U. La Calera', valor: 8 },
-      { posicion: 2, nombre: 'Felipe Chamorro', club: 'La Serena', valor: 8 },
-    ],
-  },
-  {
-    categoria: 'Tarjetas rojas',
-    unidad: 'T. rojas',
-    tipo: 'rojas',
-    jugadores: [
-      { posicion: 1, nombre: 'Axel Alfonzo', club: 'Deportes Limache', valor: 2 },
-      { posicion: 1, nombre: 'Clemente Montes', club: 'U. Católica', valor: 2 },
-      { posicion: 1, nombre: 'Diego Carrasco Muñoz', club: 'Concepción', valor: 2 },
-      { posicion: 1, nombre: 'Favian Loyola', club: 'Audax Italiano', valor: 2 },
-      { posicion: 1, nombre: 'Hugo Magallanes', club: 'Everton', valor: 2 },
-    ],
-  },
-];
-
-function IconoEstadistica({ tipo }: { tipo: string }) {
-  if (tipo === 'goles') {
-    return (
-      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth="1.8" />
-        <path
-          d="m12 7.5 3 2.2-1.1 3.5h-3.8L9 9.7l3-2.2ZM5.2 10.5l2.2.8M18.8 10.5l-2.2.8M9.7 17.3l1.2-2.1M14.3 17.3l-1.2-2.1"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-
-  if (tipo === 'asistencias') {
-    return (
-      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path
-          d="M4 7.5 8.5 4l3.9 3.5L16.5 4 20 7.5l-3.5 3.2v7.8h-2.7v-5.2h-3.6v5.2H7.5V10.7L4 7.5Z"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinejoin="round"
-        />
-      </svg>
-    );
-  }
-
-  if (tipo === 'amarillas') {
-    return (
-      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <rect x="7.5" y="4" width="9" height="16" rx="1.8" stroke="currentColor" strokeWidth="1.8" />
-        <path d="M10.5 8h3M10.5 11.5h3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
-  return (
-    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <rect x="7.5" y="4" width="9" height="16" rx="1.8" stroke="currentColor" strokeWidth="1.8" />
-    </svg>
-  );
-}
-
 export default function Home() {
+  const [estadisticas, setEstadisticas] = useState<EstadisticaJugador[]>([]);
+  const [errorEstadisticas, setErrorEstadisticas] = useState<string | null>(null);
+
+  // Rankings de la Liga de Primera: mismos datos que la página /estadisticas
+  useEffect(() => {
+    let activo = true;
+    obtenerEstadisticasPorCompeticion(ID_LIGA_PRIMERA)
+      .then((datos) => {
+        if (activo) setEstadisticas(datos);
+      })
+      .catch((e: unknown) => {
+        if (activo) setErrorEstadisticas(e instanceof Error ? e.message : 'Ocurrió un error inesperado.');
+      });
+    return () => {
+      activo = false;
+    };
+  }, []);
+
   function moverCarrusel(direccion: number): void {
     const pista = document.getElementById('pista-competiciones');
     if (!pista) {
@@ -293,7 +221,7 @@ export default function Home() {
             {
               titulo: 'Estadísticas',
               texto: 'Rankings de goles, asistencias y disciplinarias en tiempo real.',
-              ruta: '/#estadisticas',
+              ruta: '/estadisticas',
               icono: (
                 <path
                   d="M4 19V5M4 19h16M8 16V9m4 7V6m4 10v-4"
@@ -491,44 +419,31 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-            {ESTADISTICAS.map((categoria) => (
-              <article
-                key={categoria.categoria}
-                className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg shadow-slate-900/5"
-              >
-                <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-rnfc-red-dark to-rnfc-red py-3.5 text-[0.66rem] font-bold uppercase tracking-[0.14em] text-white">
-                  <IconoEstadistica tipo={categoria.tipo} />
-                  {categoria.categoria}
-                </div>
-                <div className="px-4 py-2">
-                  {categoria.jugadores.map((jugador, indice) => (
-                    <div
-                      key={`${jugador.nombre}-${indice}`}
-                      className="flex items-center gap-3 border-b border-slate-100 py-3 last:border-0"
-                    >
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-rnfc-navy text-[0.68rem] font-bold text-white">
-                        {jugador.posicion}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-bold leading-tight text-slate-800">
-                          {jugador.nombre}
-                        </p>
-                        <p className="truncate text-[0.7rem] text-slate-400">{jugador.club}</p>
-                      </div>
-                      <div className="shrink-0 text-right">
-                        <p className="text-lg font-extrabold leading-none text-rnfc-navy">
-                          {jugador.valor}
-                        </p>
-                        <p className="mt-0.5 text-[0.56rem] font-bold uppercase tracking-wide text-slate-400">
-                          {categoria.unidad}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </article>
-            ))}
+          {errorEstadisticas ? (
+            <p role="alert" className="mt-12 rounded-2xl border border-red-200 bg-red-50 p-6 text-center font-semibold text-red-700">
+              {errorEstadisticas}
+            </p>
+          ) : (
+            <div className="mt-12 grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
+              {CATEGORIAS_RANKING.map((categoria) => (
+                <TarjetaRanking
+                  key={categoria.tipo}
+                  titulo={categoria.titulo}
+                  unidad={categoria.unidad}
+                  tipo={categoria.tipo}
+                  filas={calcularRanking(estadisticas, categoria.tipo)}
+                />
+              ))}
+            </div>
+          )}
+
+          <div className="mt-10 text-center">
+            <Link
+              to="/estadisticas"
+              className="inline-flex items-center gap-2 rounded-full bg-rnfc-red px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-rnfc-red/20 transition hover:-translate-y-0.5 hover:bg-rnfc-red-dark"
+            >
+              Ver todas las estadísticas
+            </Link>
           </div>
         </div>
       </section>

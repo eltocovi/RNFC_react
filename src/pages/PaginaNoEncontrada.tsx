@@ -51,7 +51,7 @@ export default function PaginaNoEncontrada() {
             <Link to="/#competiciones" className="transition hover:text-white">
               Competiciones
             </Link>
-            <Link to="/#estadisticas" className="transition hover:text-white">
+            <Link to="/estadisticas" className="transition hover:text-white">
               Estadísticas
             </Link>
             <Link to="/perfil" className="transition hover:text-white">

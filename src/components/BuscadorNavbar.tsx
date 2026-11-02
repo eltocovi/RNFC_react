@@ -61,8 +61,8 @@ const DESTINOS: DestinoBusqueda[] = [
   {
     titulo: 'Estadísticas',
     descripcion: 'Rankings de goles, asistencias y tarjetas.',
-    ruta: '/#estadisticas',
-    tipo: 'Sección',
+    ruta: '/estadisticas',
+    tipo: 'Página',
     claves: 'estadisticas goleadores asistencias tarjetas rankings datos',
   },
 ];
