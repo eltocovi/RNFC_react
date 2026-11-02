@@ -3,6 +3,7 @@ import LayoutAplicacion from './components/LayoutAplicacion';
 import Club from './pages/Club';
 import Contacto from './pages/Contacto';
 import Home from './pages/Home';
+import PaginaEstadisticas from './pages/PaginaEstadisticas';
 import PaginaJugadores from './pages/PaginaJugadores';
 import PaginaNoEncontrada from './pages/PaginaNoEncontrada';
 import QuienesSomos from './pages/QuienesSomos';
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="contacto" element={<Contacto />} />
         <Route path="perfil" element={<UserPerfil />} />
         <Route path="jugadores" element={<PaginaJugadores />} />
+        <Route path="estadisticas" element={<PaginaEstadisticas />} />
         <Route path="tournaments" element={<Tournament />} />
         <Route path="clubs" element={<Club />} />
         <Route path="clubs/:id" element={<Club />} />

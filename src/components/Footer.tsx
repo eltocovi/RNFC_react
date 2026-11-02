@@ -5,7 +5,7 @@ const ENLACES = [
   { texto: 'Quiénes somos', ruta: '/quienes-somos' },
   { texto: 'Jugadores', ruta: '/jugadores' },
   { texto: 'Clubes', ruta: '/clubs' },
-  { texto: 'Estadísticas', ruta: '/#estadisticas' },
+  { texto: 'Estadísticas', ruta: '/estadisticas' },
   { texto: 'Competiciones', ruta: '/#competiciones' },
   { texto: 'Contacto', ruta: '/contacto' },
 ];
