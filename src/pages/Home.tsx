@@ -86,7 +86,7 @@ export default function Home() {
           alt=""
           className="absolute inset-0 h-full w-full object-cover opacity-50"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-rnfc-blue via-rnfc-blue/90 to-rnfc-red-dark/70" />
+        <div className="absolute inset-0 bg-linear-to-r from-rnfc-blue via-rnfc-blue/90 to-rnfc-red-dark/70" />
         <div className="absolute -left-24 top-10 h-72 w-72 rounded-full bg-rnfc-red/30 blur-3xl" />
         <div className="absolute -right-16 bottom-0 h-80 w-80 rounded-full bg-rnfc-navy/40 blur-3xl" />
 
@@ -359,7 +359,7 @@ export default function Home() {
                 key={jugador.nombre}
                 className="group w-full max-w-xs overflow-hidden rounded-3xl bg-white shadow-xl shadow-slate-900/10 transition hover:-translate-y-1.5 hover:shadow-2xl sm:w-80"
               >
-                <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-rnfc-red-dark via-rnfc-red to-[#a30f22] py-3 text-[0.66rem] font-bold uppercase tracking-[0.16em] text-white">
+                <div className="flex items-center justify-center gap-2 bg-linear-to-r from-rnfc-red-dark via-rnfc-red to-[#a30f22] py-3 text-[0.66rem] font-bold uppercase tracking-[0.16em] text-white">
                   <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path
                       d="m12 3 2.6 5.4 5.9.8-4.3 4.2 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.2 5.9-.8L12 3Z"
@@ -378,7 +378,7 @@ export default function Home() {
                     className="h-full w-full object-cover object-top transition duration-500 group-hover:scale-105"
                     loading="lazy"
                   />
-                  <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/50 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-black/50 to-transparent" />
                   <img
                     src={jugador.escudo}
                     alt={`Escudo de ${jugador.club}`}
@@ -448,11 +448,11 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-gradient-to-r from-rnfc-red-dark via-rnfc-red to-rnfc-navy">
+      <section className="relative overflow-hidden bg-linear-to-r from-rnfc-red-dark via-rnfc-red to-rnfc-navy">
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute -left-20 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full border-[40px] border-white" />
-          <div className="absolute right-10 top-0 h-44 w-44 rounded-full border-[30px] border-white" />
-          <div className="absolute bottom-0 left-1/2 h-40 w-40 translate-y-1/2 rounded-full border-[25px] border-white" />
+          <div className="absolute -left-20 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full border-40 border-white" />
+          <div className="absolute right-10 top-0 h-44 w-44 rounded-full border-30 border-white" />
+          <div className="absolute bottom-0 left-1/2 h-40 w-40 translate-y-1/2 rounded-full border-25 border-white" />
         </div>
         <div className="relative mx-auto flex max-w-7xl flex-col items-center gap-6 px-4 py-16 text-center sm:px-6 lg:px-8">
           <h2 className="max-w-3xl font-display text-4xl uppercase leading-none tracking-wide text-white sm:text-5xl">

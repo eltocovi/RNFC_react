@@ -207,7 +207,7 @@ export default function PaginaJugadores() {
       )}
 
       {jugadorElegido && usuarioComunId && (
-        <div className="fixed inset-0 z-[100]">
+        <div className="fixed inset-0 z-100">
           <button
             type="button"
             aria-label="Cerrar ficha del jugador"

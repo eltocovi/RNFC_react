@@ -7,7 +7,7 @@ export const ID_ROL: Record<RolUsuario, number> = {
 };
 
 export interface Usuario {
-  id_usuario: number;
+  id: number;
   id_tipo_usuario: number;
   pass: string;
   correo: string;

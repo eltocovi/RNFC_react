@@ -84,9 +84,9 @@ export function rolDeUsuario(usuario: Pick<Usuario, 'id_tipo_usuario'>): RolUsua
 }
 
 function sinPass(usuario: Usuario): UsuarioPublico {
-  const { id_usuario, id_tipo_usuario, correo, fecha_creacion, pnombre, snombre, papellido, sapellido } =
+  const { id, id_tipo_usuario, correo, fecha_creacion, pnombre, snombre, papellido, sapellido } =
     usuario;
-  return { id_usuario, id_tipo_usuario, correo, fecha_creacion, pnombre, snombre, papellido, sapellido };
+  return { id, id_tipo_usuario, correo, fecha_creacion, pnombre, snombre, papellido, sapellido };
 }
 
 const esAdminOPropietario = (sesion: SesionUsuario, idUsuario: number): boolean =>
@@ -173,8 +173,8 @@ async function firmarJwt(datos: string): Promise<string> {
 async function crearToken(usuario: Usuario): Promise<string> {
   const ahora = Math.floor(Date.now() / 1000);
   const payload: PayloadJwt = {
-    sub: String(usuario.id_usuario),
-    id_usuario: usuario.id_usuario,
+    sub: String(usuario.id),
+    id_usuario: usuario.id,
     id_tipo_usuario: usuario.id_tipo_usuario,
     correo: usuario.correo,
     nombre: nombreCompleto(usuario),
@@ -407,7 +407,7 @@ export async function editarUsuario(
 
     if (correo !== normalizarCorreo(existente.correo)) {
       const existentes = await buscarPorCorreo(correo);
-      if (existentes.some((item) => item.id_usuario !== id)) {
+      if (existentes.some((item) => item.id !== id)) {
         throw new Error('El correo ya está registrado por otro usuario.');
       }
     }

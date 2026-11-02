@@ -104,7 +104,7 @@ export default function Tournament() {
   const goleadoresOrdenados = [...goleadores].sort((a, b) => b.jugador.goles - a.jugador.goles);
 
   return (
-    <main className="mx-auto flex w-full max-w-[1440px] flex-1 flex-col space-y-7 px-4 py-7 sm:px-6 lg:px-8">
+    <main className="mx-auto flex w-full max-w-360 flex-1 flex-col space-y-7 px-4 py-7 sm:px-6 lg:px-8">
       <TournamentBanner jornada={jornada} />
 
       <div className="grid grid-cols-1 gap-7 lg:grid-cols-12">

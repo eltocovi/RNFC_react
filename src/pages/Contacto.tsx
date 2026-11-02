@@ -83,10 +83,10 @@ export default function Contacto() {
 
   return (
     <>
-      <section className="relative overflow-hidden bg-gradient-to-r from-rnfc-red-dark via-rnfc-red to-rnfc-navy">
+      <section className="relative overflow-hidden bg-linear-to-r from-rnfc-red-dark via-rnfc-red to-rnfc-navy">
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute -left-20 top-0 h-64 w-64 rounded-full border-[40px] border-white" />
-          <div className="absolute -bottom-24 right-10 h-80 w-80 rounded-full border-[55px] border-white" />
+          <div className="absolute -left-20 top-0 h-64 w-64 rounded-full border-40 border-white" />
+          <div className="absolute -bottom-24 right-10 h-80 w-80 rounded-full border-55 border-white" />
         </div>
         <div className="relative mx-auto flex max-w-7xl flex-col items-start gap-5 px-4 py-20 sm:px-6 lg:px-8">
           <nav className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-white/50">

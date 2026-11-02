@@ -2,11 +2,11 @@ import { Link } from 'react-router';
 
 export default function PaginaNoEncontrada() {
   return (
-    <section className="relative flex min-h-[70vh] items-center overflow-hidden bg-gradient-to-br from-rnfc-blue via-rnfc-blue to-rnfc-red-dark py-20">
+    <section className="relative flex min-h-[70vh] items-center overflow-hidden bg-linear-to-br from-rnfc-blue via-rnfc-blue to-rnfc-red-dark py-20">
       <div className="absolute inset-0 opacity-10">
-        <div className="absolute left-1/2 top-1/2 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full border-[80px] border-white" />
-        <div className="absolute -left-20 bottom-0 h-64 w-64 rounded-full border-[40px] border-white" />
-        <div className="absolute -right-16 top-0 h-56 w-56 rounded-full border-[32px] border-white" />
+        <div className="absolute left-1/2 top-1/2 h-144 w-xl -translate-x-1/2 -translate-y-1/2 rounded-full border-80 border-white" />
+        <div className="absolute -left-20 bottom-0 h-64 w-64 rounded-full border-40 border-white" />
+        <div className="absolute -right-16 top-0 h-56 w-56 rounded-full border-32 border-white" />
       </div>
 
       <div className="relative mx-auto w-full max-w-4xl px-4 text-center sm:px-6 lg:px-8">

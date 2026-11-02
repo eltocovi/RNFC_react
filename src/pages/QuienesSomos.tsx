@@ -75,10 +75,10 @@ const HITOS = [
 export default function QuienesSomos() {
   return (
     <>
-      <section className="relative overflow-hidden bg-gradient-to-r from-rnfc-blue via-rnfc-blue to-rnfc-red-dark">
+      <section className="relative overflow-hidden bg-linear-to-r from-rnfc-blue via-rnfc-blue to-rnfc-red-dark">
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full border-[45px] border-white" />
-          <div className="absolute bottom-0 left-1/4 h-52 w-52 translate-y-1/2 rounded-full border-[30px] border-white" />
+          <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full border-45 border-white" />
+          <div className="absolute bottom-0 left-1/4 h-52 w-52 translate-y-1/2 rounded-full border-30 border-white" />
         </div>
         <div className="relative mx-auto flex max-w-7xl flex-col items-start gap-6 px-4 py-20 sm:px-6 lg:px-8">
           <nav className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-white/50">
@@ -101,7 +101,7 @@ export default function QuienesSomos() {
       <section className="bg-white py-20">
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
           <div className="relative mx-auto w-full max-w-md">
-            <div className="absolute inset-0 rotate-3 rounded-[2.5rem] bg-gradient-to-br from-rnfc-red/10 to-rnfc-navy/10" />
+            <div className="absolute inset-0 rotate-3 rounded-[2.5rem] bg-linear-to-br from-rnfc-red/10 to-rnfc-navy/10" />
             <div className="relative flex aspect-square items-center justify-center rounded-[2.5rem] border border-slate-200 bg-slate-50 p-10">
               <img
                 src="/assets/escudo_rnfc.png"
@@ -205,7 +205,7 @@ export default function QuienesSomos() {
             <ol className="relative space-y-6 border-l border-white/15 pl-6">
               {HITOS.map((hito) => (
                 <li key={hito.anio} className="relative">
-                  <span className="absolute -left-[1.9rem] top-1.5 h-3 w-3 rounded-full bg-rnfc-gold ring-4 ring-rnfc-blue" />
+                  <span className="absolute left-[1.9rem] top-1.5 h-3 w-3 rounded-full bg-rnfc-gold ring-4 ring-rnfc-blue" />
                   <p className="font-display text-2xl tracking-wide text-rnfc-gold">{hito.anio}</p>
                   <h3 className="mt-1 text-base font-bold text-white">{hito.titulo}</h3>
                   <p className="mt-1 text-sm leading-relaxed text-white/60">{hito.texto}</p>

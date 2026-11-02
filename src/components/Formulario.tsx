@@ -116,7 +116,7 @@ export default function Formulario({
         <div className="mb-6">
           {titulo && (
             <div className="flex items-center gap-3">
-              <span className="h-8 w-1.5 rounded-full bg-gradient-to-b from-rnfc-red to-rnfc-red-dark" />
+              <span className="h-8 w-1.5 rounded-full bg-linear-to-b from-rnfc-red to-rnfc-red-dark" />
               <h2 className="font-display text-3xl leading-none tracking-wide text-slate-900">
                 {titulo}
               </h2>
@@ -232,7 +232,7 @@ export default function Formulario({
         <button
           type="submit"
           disabled={cargando}
-          className="flex w-full items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-rnfc-red to-rnfc-red-dark px-5 py-3.5 text-sm font-bold uppercase tracking-[0.12em] text-white shadow-lg shadow-rnfc-red/20 transition hover:from-rnfc-red-dark hover:to-rnfc-red-dark focus:outline-none focus:ring-4 focus:ring-rnfc-red/25 disabled:cursor-not-allowed disabled:opacity-70"
+          className="flex w-full items-center justify-center gap-2.5 rounded-xl bg-linear-to-r from-rnfc-red to-rnfc-red-dark px-5 py-3.5 text-sm font-bold uppercase tracking-[0.12em] text-white shadow-lg shadow-rnfc-red/20 transition hover:from-rnfc-red-dark hover:to-rnfc-red-dark focus:outline-none focus:ring-4 focus:ring-rnfc-red/25 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {cargando && (
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
