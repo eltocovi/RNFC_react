@@ -10,9 +10,11 @@ const COLOR_POSICION: Record<Posicion, string> = {
 
 interface Props {
   jugador: JugadorConClub;
+  onSeleccionar?: () => void;
+  seleccionado?: boolean;
 }
 
-export default function JugadorCard({ jugador }: Props) {
+export default function JugadorCard({ jugador, onSeleccionar, seleccionado = false }: Props) {
   const { club } = jugador;
 
   return (
@@ -45,6 +47,16 @@ export default function JugadorCard({ jugador }: Props) {
         <dt className="text-slate-500">Partidos jugados</dt>
         <dd className="text-right font-semibold">{jugador.partidos}</dd>
       </dl>
+      {onSeleccionar && (
+        <button
+          type="button"
+          onClick={onSeleccionar}
+          disabled={seleccionado}
+          className="mt-4 w-full rounded-xl bg-rnfc-blue px-4 py-2.5 text-sm font-bold text-white transition hover:bg-rnfc-red-dark disabled:cursor-not-allowed disabled:bg-emerald-100 disabled:text-emerald-800"
+        >
+          {seleccionado ? 'Ya está en tu equipo' : 'Elegir para mi equipo'}
+        </button>
+      )}
     </article>
   );
 }

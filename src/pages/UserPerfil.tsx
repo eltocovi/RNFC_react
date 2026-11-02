@@ -3,6 +3,7 @@ import { Link, useOutletContext } from 'react-router';
 import Formulario from '../components/Formulario';
 import type { CampoFormulario } from '../components/Formulario';
 import GestionJugadoresGestor from '../components/GestionJugadoresGestor';
+import UltimateTeam from '../components/UltimateTeam';
 import {
   borrarUsuario,
   crearUsuario,
@@ -241,7 +242,7 @@ export default function UserPerfil() {
   const [mensajeAdmin, setMensajeAdmin] = useState<Mensaje | null>(null);
   const [versionAdmin, setVersionAdmin] = useState(0);
   const [seccionElegida, setSeccionElegida] = useState<
-    'jugadores' | 'configuracion' | 'usuarios' | null
+    'jugadores' | 'ultimate-team' | 'configuracion' | 'usuarios' | null
   >(null);
 
   const usuario =
@@ -648,10 +649,11 @@ export default function UserPerfil() {
       ? 'jugadores'
       : sesion.rol === 'Admin'
         ? 'usuarios'
-        : 'configuracion';
+        : 'ultimate-team';
   const seccionActiva =
     (seccionElegida === 'jugadores' && sesion.rol !== 'GestorDeportivo') ||
-    (seccionElegida === 'usuarios' && !esAdmin)
+    (seccionElegida === 'usuarios' && !esAdmin) ||
+    (seccionElegida === 'ultimate-team' && sesion.rol !== 'UsuarioComun')
       ? seccionPredeterminada
       : seccionElegida ?? seccionPredeterminada;
 
@@ -778,6 +780,9 @@ export default function UserPerfil() {
                 </div>
                 <nav className="mt-3 space-y-1" aria-label="Navegación del perfil">
                   {[
+                    ...(rolActual === 'UsuarioComun'
+                      ? [{ id: 'ultimate-team' as const, label: 'Mi Ultimate Team', icon: '🏆' }]
+                      : []),
                     ...(rolActual === 'GestorDeportivo'
                       ? [{ id: 'jugadores' as const, label: 'Mis jugadores', icon: '⚽' }]
                       : []),
@@ -816,6 +821,9 @@ export default function UserPerfil() {
               <div className="min-w-0">
                 {seccionActiva === 'jugadores' && rolActual === 'GestorDeportivo' && (
                   <GestionJugadoresGestor gestorId={sesion.id_usuario} />
+                )}
+                {seccionActiva === 'ultimate-team' && rolActual === 'UsuarioComun' && (
+                  <UltimateTeam key={sesion.id_usuario} usuarioId={sesion.id_usuario} />
                 )}
                 {seccionActiva === 'configuracion' && (
                   <Formulario
