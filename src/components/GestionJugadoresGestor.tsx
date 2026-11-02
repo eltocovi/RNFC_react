@@ -157,7 +157,7 @@ export default function GestionJugadoresGestor({ gestorId }: Props) {
 
   return (
     <div className="space-y-6">
-      <header className="rounded-3xl bg-gradient-to-r from-rnfc-blue to-rnfc-red-dark p-6 text-white shadow-lg sm:p-8">
+      <header className="rounded-3xl bg-linear-to-r from-rnfc-blue to-rnfc-red-dark p-6 text-white shadow-lg sm:p-8">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/60">Gestión deportiva</p>
         <h2 className="mt-2 font-display text-4xl uppercase tracking-wide">Mis jugadores</h2>
         <p className="mt-2 max-w-2xl text-sm text-white/70">

@@ -67,7 +67,7 @@ export default function Navbar({ sesion, onCerrarSesion }: NavbarProps) {
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-gradient-to-r from-rnfc-red-dark via-rnfc-red to-[#a30f22] shadow-lg shadow-rnfc-red-dark/20">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-linear-to-r from-rnfc-red-dark via-rnfc-red to-[#a30f22] shadow-lg shadow-rnfc-red-dark/20">
       <div className="mx-auto flex min-h-16 max-w-screen-2xl items-center gap-3 px-3 sm:px-5 lg:px-6">
         <Link to="/" onClick={cerrarMenu} className="flex shrink-0 items-center gap-2">
           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 p-1 ring-1 ring-white/25">

@@ -116,7 +116,7 @@ export default function UltimateTeam({ usuarioId }: { usuarioId: number }) {
 
   return (
     <div className="space-y-6">
-      <header className="overflow-hidden rounded-3xl bg-gradient-to-r from-rnfc-blue via-rnfc-blue to-rnfc-red-dark p-6 text-white shadow-xl sm:p-8">
+      <header className="overflow-hidden rounded-3xl bg-linear-to-r from-rnfc-blue via-rnfc-blue to-rnfc-red-dark p-6 text-white shadow-xl sm:p-8">
         <p className="text-xs font-bold uppercase tracking-[0.2em] text-rnfc-gold">
           Arma tu equipo
         </p>
