@@ -54,17 +54,6 @@
       "snombre": "Josefa",
       "papellido": "Navarro",
       "sapellido": "Silva"
-    },
-    {
-      "id_tipo_usuario": 1,
-      "pass": "1718c24b10aeb8099e3fc44960ab6949ab76a267352459f203ea1036bec382c2",
-      "correo": "maximiliano.chandiaf@gmail.com",
-      "fecha_creacion": "2026-11-01T20:06:21.532Z",
-      "pnombre": "Maximiliano",
-      "snombre": "Alejandro",
-      "papellido": "Chandía Flores",
-      "sapellido": "Flores",
-      "id": 6
     }
   ],
   "clubes": [
@@ -112,6 +101,7 @@
       "pieDominante": "Diestro",
       "dorsal": 1,
       "clubId": 1,
+      "gestorId": 2,
       "partidos": 18,
       "goles": 0
     },
@@ -125,6 +115,7 @@
       "pieDominante": "Zurdo",
       "dorsal": 12,
       "clubId": 1,
+      "gestorId": 2,
       "partidos": 4,
       "goles": 0
     },
@@ -138,6 +129,7 @@
       "pieDominante": "Diestro",
       "dorsal": 4,
       "clubId": 1,
+      "gestorId": 2,
       "partidos": 19,
       "goles": 1
     },
@@ -151,6 +143,7 @@
       "pieDominante": "Ambidiestro",
       "dorsal": 15,
       "clubId": 1,
+      "gestorId": 2,
       "partidos": 16,
       "goles": 0
     },
@@ -164,6 +157,7 @@
       "pieDominante": "Zurdo",
       "dorsal": 16,
       "clubId": 1,
+      "gestorId": 2,
       "partidos": 17,
       "goles": 1
     },
@@ -177,6 +171,7 @@
       "pieDominante": "Diestro",
       "dorsal": 21,
       "clubId": 1,
+      "gestorId": 2,
       "partidos": 18,
       "goles": 2
     },
@@ -190,6 +185,7 @@
       "pieDominante": "Diestro",
       "dorsal": 23,
       "clubId": 1,
+      "gestorId": 2,
       "partidos": 16,
       "goles": 6
     },
@@ -203,6 +199,7 @@
       "pieDominante": "Diestro",
       "dorsal": 8,
       "clubId": 1,
+      "gestorId": 2,
       "partidos": 20,
       "goles": 1
     },
@@ -216,6 +213,7 @@
       "pieDominante": "Zurdo",
       "dorsal": 5,
       "clubId": 1,
+      "gestorId": 2,
       "partidos": 18,
       "goles": 3
     },
@@ -229,6 +227,7 @@
       "pieDominante": "Diestro",
       "dorsal": 10,
       "clubId": 1,
+      "gestorId": 2,
       "partidos": 19,
       "goles": 7
     },
@@ -242,6 +241,7 @@
       "pieDominante": "Ambidiestro",
       "dorsal": 7,
       "clubId": 1,
+      "gestorId": 2,
       "partidos": 9,
       "goles": 1
     },
@@ -255,6 +255,7 @@
       "pieDominante": "Zurdo",
       "dorsal": 9,
       "clubId": 1,
+      "gestorId": 2,
       "partidos": 12,
       "goles": 8
     },
@@ -268,6 +269,7 @@
       "pieDominante": "Diestro",
       "dorsal": 11,
       "clubId": 1,
+      "gestorId": 2,
       "partidos": 17,
       "goles": 4
     },
@@ -281,6 +283,7 @@
       "pieDominante": "Diestro",
       "dorsal": 20,
       "clubId": 1,
+      "gestorId": 2,
       "partidos": 10,
       "goles": 2
     },
@@ -294,6 +297,7 @@
       "pieDominante": "Diestro",
       "dorsal": 29,
       "clubId": 1,
+      "gestorId": 2,
       "partidos": 15,
       "goles": 5
     },
@@ -307,6 +311,7 @@
       "pieDominante": "Zurdo",
       "dorsal": 1,
       "clubId": 2,
+      "gestorId": 4,
       "partidos": 20,
       "goles": 0
     },
@@ -320,6 +325,7 @@
       "pieDominante": "Diestro",
       "dorsal": 12,
       "clubId": 2,
+      "gestorId": 4,
       "partidos": 2,
       "goles": 0
     },
@@ -333,6 +339,7 @@
       "pieDominante": "Ambidiestro",
       "dorsal": 2,
       "clubId": 2,
+      "gestorId": 4,
       "partidos": 19,
       "goles": 2
     },
@@ -346,6 +353,7 @@
       "pieDominante": "Zurdo",
       "dorsal": 22,
       "clubId": 2,
+      "gestorId": 4,
       "partidos": 18,
       "goles": 3
     },
@@ -359,6 +367,7 @@
       "pieDominante": "Diestro",
       "dorsal": 17,
       "clubId": 2,
+      "gestorId": 4,
       "partidos": 19,
       "goles": 2
     },
@@ -372,6 +381,7 @@
       "pieDominante": "Diestro",
       "dorsal": 14,
       "clubId": 2,
+      "gestorId": 4,
       "partidos": 17,
       "goles": 1
     },
@@ -385,6 +395,7 @@
       "pieDominante": "Diestro",
       "dorsal": 21,
       "clubId": 2,
+      "gestorId": 4,
       "partidos": 19,
       "goles": 1
     },
@@ -398,6 +409,7 @@
       "pieDominante": "Zurdo",
       "dorsal": 20,
       "clubId": 2,
+      "gestorId": 4,
       "partidos": 15,
       "goles": 2
     },
@@ -411,6 +423,7 @@
       "pieDominante": "Diestro",
       "dorsal": 10,
       "clubId": 2,
+      "gestorId": 4,
       "partidos": 16,
       "goles": 4
     },
@@ -424,6 +437,7 @@
       "pieDominante": "Ambidiestro",
       "dorsal": 8,
       "clubId": 2,
+      "gestorId": 4,
       "partidos": 18,
       "goles": 3
     },
@@ -437,6 +451,7 @@
       "pieDominante": "Zurdo",
       "dorsal": 9,
       "clubId": 2,
+      "gestorId": 4,
       "partidos": 19,
       "goles": 9
     },
@@ -450,6 +465,7 @@
       "pieDominante": "Diestro",
       "dorsal": 11,
       "clubId": 2,
+      "gestorId": 4,
       "partidos": 14,
       "goles": 4
     },
@@ -463,6 +479,7 @@
       "pieDominante": "Diestro",
       "dorsal": 18,
       "clubId": 2,
+      "gestorId": 4,
       "partidos": 15,
       "goles": 4
     },
@@ -476,6 +493,7 @@
       "pieDominante": "Diestro",
       "dorsal": 7,
       "clubId": 2,
+      "gestorId": 4,
       "partidos": 18,
       "goles": 5
     },
@@ -738,21 +756,6 @@
       "clubId": 4,
       "partidos": 14,
       "goles": 3
-    },
-    {
-      "nombre": "Maximiliano",
-      "apellido": "Chandia",
-      "fechaNacimiento": "2008-03-06",
-      "nacionalidad": "Chilena",
-      "dorsal": 1,
-      "posicion": "Arquero",
-      "pieDominante": "Diestro",
-      "clubId": 1,
-      "gestorId": 2,
-      "id": 50,
-      "id_usuario": 50,
-      "partidos": 0,
-      "goles": 0
     }
   ],
   "posiciones": [
