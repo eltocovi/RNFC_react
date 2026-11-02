@@ -246,7 +246,7 @@ export default function UserPerfil() {
   >(null);
 
   const usuario =
-    sesion && usuarioCargado?.id_usuario === sesion.id_usuario ? usuarioCargado : null;
+    sesion && usuarioCargado?.id === sesion.id_usuario ? usuarioCargado : null;
   const cargandoPerfil = Boolean(sesion && !usuario && !mensajePerfil);
 
   useEffect(() => {
@@ -380,7 +380,7 @@ export default function UserPerfil() {
         throw new Error('Las contraseñas no coinciden.');
       }
 
-      const actualizado = await editarUsuario(usuario.id_usuario, {
+      const actualizado = await editarUsuario(usuario.id, {
         pnombre: valores.pnombre,
         snombre: valores.snombre,
         papellido: valores.papellido,
@@ -436,11 +436,11 @@ export default function UserPerfil() {
         ...(valores.pass.trim() ? { pass: valores.pass } : {}),
       };
 
-      const actualizado = await editarUsuario(usuarioAdmin.id_usuario, cambios);
+      const actualizado = await editarUsuario(usuarioAdmin.id, cambios);
       setUsuarioAdmin(actualizado);
       setUsuariosAdmin((usuarios) =>
         usuarios.map((item) =>
-          item.id_usuario === actualizado.id_usuario ? actualizado : item,
+          item.id === actualizado.id ? actualizado : item,
         ),
       );
       setVersionAdmin((version) => version + 1);
@@ -470,13 +470,13 @@ export default function UserPerfil() {
     setMensajeAdmin(null);
 
     try {
-      await borrarUsuario(usuarioAdmin.id_usuario);
+      await borrarUsuario(usuarioAdmin.id);
       setMensajeAdmin({
         tipo: 'exito',
         texto: `El usuario ${nombreCompleto(usuarioAdmin)} fue eliminado.`,
       });
       setUsuariosAdmin((usuarios) =>
-        usuarios.filter((item) => item.id_usuario !== usuarioAdmin.id_usuario),
+        usuarios.filter((item) => item.id !== usuarioAdmin.id),
       );
       setUsuarioAdmin(null);
     } catch (error) {
@@ -499,10 +499,10 @@ export default function UserPerfil() {
 
   if (!sesion) {
     return (
-      <section className="relative overflow-hidden bg-gradient-to-br from-rnfc-blue via-rnfc-blue to-rnfc-red-dark py-16 sm:py-20">
+      <section className="relative overflow-hidden bg-linear-to-br from-rnfc-blue via-rnfc-blue to-rnfc-red-dark py-16 sm:py-20">
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute -right-20 top-10 h-72 w-72 rounded-full border-[45px] border-white" />
-          <div className="absolute -bottom-20 left-10 h-64 w-64 rounded-full border-[35px] border-white" />
+          <div className="absolute -right-20 top-10 h-72 w-72 rounded-full border-45 border-white" />
+          <div className="absolute -bottom-20 left-10 h-64 w-64 rounded-full border-35 border-white" />
         </div>
 
         <div className="relative mx-auto grid max-w-7xl items-start gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_1fr] lg:px-8">
@@ -659,10 +659,10 @@ export default function UserPerfil() {
 
   return (
     <>
-      <section className="relative overflow-hidden bg-gradient-to-r from-rnfc-blue via-rnfc-blue to-rnfc-red-dark py-14">
+      <section className="relative overflow-hidden bg-linear-to-r from-rnfc-blue via-rnfc-blue to-rnfc-red-dark py-14">
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full border-[40px] border-white" />
-          <div className="absolute bottom-0 left-1/3 h-44 w-44 translate-y-1/2 rounded-full border-[28px] border-white" />
+          <div className="absolute -right-16 -top-20 h-64 w-64 rounded-full border-40 border-white" />
+          <div className="absolute bottom-0 left-1/3 h-44 w-44 translate-y-1/2 rounded-full border-28 border-white" />
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -827,7 +827,7 @@ export default function UserPerfil() {
                 )}
                 {seccionActiva === 'configuracion' && (
                   <Formulario
-                    key={`perfil-${usuario.id_usuario}-${versionPerfil}-${usuario.correo}-${usuario.pnombre}-${usuario.papellido}`}
+                    key={`perfil-${usuario.id}-${versionPerfil}-${usuario.correo}-${usuario.pnombre}-${usuario.papellido}`}
                     campos={CAMPOS_PERFIL}
                     valoresIniciales={valoresPerfil}
                     onSubmit={manejarPerfil}
@@ -881,10 +881,10 @@ export default function UserPerfil() {
                     <ul className="mt-6 divide-y divide-slate-100 rounded-2xl border border-slate-100">
                       {usuariosAdmin.map((item) => {
                         const rol = rolDeUsuario(item);
-                        const seleccionado = usuarioAdmin?.id_usuario === item.id_usuario;
+                        const seleccionado = usuarioAdmin?.id === item.id;
                         return (
                           <li
-                            key={item.id_usuario}
+                            key={item.id}
                             className={`flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between ${
                               seleccionado ? 'bg-rnfc-red/5' : 'bg-white'
                             }`}
@@ -898,12 +898,12 @@ export default function UserPerfil() {
                                 <span className={`rounded-full border px-2.5 py-0.5 text-[0.65rem] font-bold uppercase tracking-wide ${ESTILO_ROL[rol]}`}>
                                   {ROLES[rol].etiqueta}
                                 </span>
-                                <span className="text-xs text-slate-400">ID #{item.id_usuario}</span>
+                                <span className="text-xs text-slate-400">ID #{item.id}</span>
                               </div>
                             </div>
                             <button
                               type="button"
-                              onClick={() => void seleccionarUsuarioAdmin(item.id_usuario)}
+                              onClick={() => void seleccionarUsuarioAdmin(item.id)}
                               disabled={procesandoAdmin}
                               className="shrink-0 rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition hover:border-rnfc-red hover:text-rnfc-red disabled:opacity-50"
                             >
@@ -924,11 +924,11 @@ export default function UserPerfil() {
                   {usuarioAdmin && (
                     <div className="mt-6 border-t border-slate-100 pt-6">
                       <Formulario
-                        key={`admin-${usuarioAdmin.id_usuario}-${usuarioAdmin.correo}-${usuarioAdmin.id_tipo_usuario}-${versionAdmin}`}
+                        key={`admin-${usuarioAdmin.id}-${usuarioAdmin.correo}-${usuarioAdmin.id_tipo_usuario}-${versionAdmin}`}
                         campos={CAMPOS_ADMIN}
                         valoresIniciales={valoresAdmin}
                         onSubmit={manejarEdicionAdmin}
-                        titulo={`Editar usuario #${usuarioAdmin.id_usuario}`}
+                        titulo={`Editar usuario #${usuarioAdmin.id}`}
                         descripcion="Como administrador puedes modificar todos los campos, incluido el rol."
                         textoBoton="Guardar usuario"
                         cargando={procesandoAdmin}
